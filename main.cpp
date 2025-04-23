@@ -1,3 +1,5 @@
+#include "GameScene.h"
+#include "KamataEngine.h"
 #include <Windows.h>
 #include"KamataEngine.h"
 #include"GameScene.h"
@@ -10,12 +12,12 @@ DirectXCommon* dxCommon = DirectXCommon::GetInstance();
 
 int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
-	//エンジンの初期化
+	// エンジンの初期化
 	KamataEngine::Initialize(L"LE2C_10_サクラ_タイキ_AL3");
 
-	//ゲームシーンのインスタンス生成
+	// ゲームシーンのインスタンス生成
 	GameScene* gameScene = new GameScene();
-	//ゲームシーンの初期化
+	// ゲームシーンの初期化
 	gameScene->Initialize();
 
 	ImGuiManager* imguiManager = ImGuiManager::GetInstance();
@@ -34,7 +36,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		// 描画開始
 		dxCommon->PreDraw();
 
-		//ゲームシーンの描画
+		// ゲームシーンの描画
 		gameScene->Draw();
 		//軸表示の描画
 		AxisIndicator::GetInstance()->Draw();
@@ -45,12 +47,12 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		dxCommon->PostDraw();
 	}
 
-	//ゲームシーンの開放
+	// ゲームシーンの開放
 	delete gameScene;
-	//nullptrの代入
+	// nullptrの代入
 	gameScene = nullptr;
 
-	//エンジンの終了処理
+	// エンジンの終了処理
 	KamataEngine::Finalize();
 	return 0;
 }
