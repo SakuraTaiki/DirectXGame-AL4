@@ -1,30 +1,33 @@
 #pragma once
-#include"KamataEngine.h"
-//ゲームシーン
-class GameScene 
-{
+#include "KamataEngine.h"
 
+class GameScene {
 public:
-	//初期化
 	void Initialize();
 
-	
-
-	//更新
 	void Update();
 
-	//描画
 	void Draw();
+
 	~GameScene();
 
 private:
+	// 画像
 	uint32_t textureHandle_ = 0;
-	uint32_t soundDateHandle_ = 0;
+	// 音声
+	uint32_t soundDataHandle_ = 0;
+	// 再生（音楽
 	uint32_t voiceHandle_ = 0;
+
+	float inputFloat3[3] = {0, 0, 0};
+
 	KamataEngine::Sprite* sprite_ = nullptr;
 	KamataEngine::Model* model_ = nullptr;
+	// デバッグカメラ
+	KamataEngine::DebugCamera* debugCamera_ = nullptr;
+
+	// ワールドトランスフォーム
 	KamataEngine::WorldTransform worldTransform_;
+	// カメラ
 	KamataEngine::Camera camera_;
-	KamataEngine::DebugCamera* debugcamera_ = nullptr;
-	float inputFloat3[3] = {0, 0, 0};
 };
