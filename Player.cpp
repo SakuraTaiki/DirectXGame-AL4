@@ -13,4 +13,9 @@ void Player::Update() {
 	worldTransform_.TransferMatrix();
 }
 
-void Player::Draw() { model_->Draw(worldTransform_, *camera_, textureHandle_); }
+void Player::Draw() {
+	KamataEngine::DirectXCommon* dxCommon = KamataEngine::DirectXCommon::GetInstance();
+	KamataEngine::Model::PreDraw(dxCommon->GetCommandList());
+	model_->Draw(worldTransform_, *camera_, textureHandle_); 
+	KamataEngine::Model::PostDraw();
+}

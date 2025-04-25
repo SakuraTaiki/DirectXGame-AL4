@@ -33,7 +33,7 @@ AxisIndicator::GetInstance()->SetVisible(true);
 AxisIndicator::GetInstance()->SetTargetCamera(&debugcamera_->GetCamera());
 //プレイヤーの初期化
 player_ = new Player();
-player_->Initialize();
+player_->Initialize(model_,textureHandle_,&camera_);
 
     }
 
