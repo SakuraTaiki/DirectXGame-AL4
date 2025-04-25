@@ -1,8 +1,6 @@
 #include "GameScene.h"
 #include "KamataEngine.h"
 #include <Windows.h>
-#include"KamataEngine.h"
-#include"GameScene.h"
 
 using namespace KamataEngine;
 // Windowsアプリでのエントリーポイント(main関数)

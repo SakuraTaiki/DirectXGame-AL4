@@ -6,6 +6,7 @@ GameScene::~GameScene()
 	delete sprite_;
 	delete model_;
 	delete debugcamera_;
+	delete player_;
 }
 
 	void GameScene::Initialize() {
@@ -30,6 +31,10 @@ debugcamera_ = new DebugCamera(1280, 720);
 //軸方向表示の表示を有効にする
 AxisIndicator::GetInstance()->SetVisible(true);
 AxisIndicator::GetInstance()->SetTargetCamera(&debugcamera_->GetCamera());
+//プレイヤーの初期化
+player_ = new Player();
+player_->Initialize();
+
     }
 
 void GameScene::Update() {
@@ -52,6 +57,11 @@ void GameScene::Update() {
 		ImGui::End();
 		ImGui::ShowDemoWindow();
 		#endif
+
+		//プレイヤーの更新
+	    player_->Update();
+
+
 }
 
 void GameScene::Draw() {
@@ -70,5 +80,6 @@ void GameScene::Draw() {
 	Model::PostDraw();
 	//ラインを描画する
 	PrimitiveDrawer::GetInstance()->DrawLine3d({0,0,0,},{0,10,0},{1.0f,0.0f,0.0f,1.0f});
-	
+	//プレイヤーの描画
+	player_->Draw();
 }
