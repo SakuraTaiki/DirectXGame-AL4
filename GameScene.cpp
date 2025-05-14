@@ -25,6 +25,10 @@ void GameScene::Initialize() {
 
 	camera_.Initialize();
 
+	mapChipField_ = new MapChipField;
+	mapChipField_->LoadMapChipCsv("Resources./blocks.csv");
+
+
 	// 要素数
 	const uint32_t kNumBlockVirtical = 10;
 	const uint32_t kNumBlockHorizontal = 20;
@@ -121,8 +125,14 @@ GameScene::~GameScene() {
 	delete player_;
 
 	delete model_;
+
 	delete blockModel_;
+
 	delete modelskydome_;
+
+	//マップチップフィールドの解放
+	delete mapChipField_;
+
 
 	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
 		for (WorldTransform*& worldTransformBlock : worldTransformBlockLine) {
