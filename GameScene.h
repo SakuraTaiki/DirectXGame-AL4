@@ -4,6 +4,7 @@
 #include "Player.h"
 #include "Skydome.h"
 #include <vector>
+#include "MapChipField.h"
 
 using namespace KamataEngine;
 
@@ -50,6 +51,9 @@ private:
 	Model* modelskydome_ = nullptr;
 
 	Skydome* skydome_ = nullptr;
+
+	//マップチップフィールド
+	MapChipField* mapChipField_;
 
 	// デバッグカメラ有効
 	bool isDebugCameraActive_ = false;
