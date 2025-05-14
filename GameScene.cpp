@@ -1,62 +1,33 @@
-#include"GameScene.h"
-#include"imgui.h"
+#include "GameScene.h"
 
 using namespace KamataEngine;
 
-GameScene::~GameScene()
-{ 
-	
-	delete model_;
+void GameScene::Initialize() {
+	// ここにインゲームの初期化処理を書く
+	textureHandle_ = TextureManager::Load("player./player.png");
 
-	delete player_;
+	////スプライトインスタンスの生成
+	// sprite_ = Sprite::Create(textureHandle_, {100, 50});
 
-	delete block_model_;
-
-delete debugCamera_;
-
-for (std::vector<WorldTransform*>& worldTransformBlockLine : WorldTransformBlocks_) {
-	for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
-
-		delete worldTransformBlock;
-	}
-}
-WorldTransformBlocks_.clear();
-
-}
-
-
-	void GameScene::Initialize() {
-
-	// ここにシーンの初期化を描く
-
-	// テクスチャハンドル
-	textureHandle_ = TextureManager::Load("sample.png");
-
-	// モデル
 	model_ = Model::Create();
 
-	// カメラのイニシャライズ
-	camera_.Initialize();
+	blockModel_ = Model::Create();
 
-	// ライン描画が参照するカメラを指定する
-	PrimitiveDrawer::GetInstance()->SetCamera(&camera_);
-
-	// プレイヤーの初期化
-	player_ = new Player();
-	player_->Initialize(model_, textureHandle_, &camera_);
-
-	// モデルの生成
-	block_model_ = Model::Create();
-
-	// デバッグカメラの生成
 	debugCamera_ = new DebugCamera(1280, 720);
 
-	// ワールドトランスフォームのイニシャライズ
+	// 自キャラの生成
+	player_ = new Player();
+
+	// 自キャラの初期化
+	player_->Initialize(model_, textureHandle_, &camera_);
+
 	worldTransform_.Initialize();
 
+	camera_.Initialize();
+
 	// 要素数
-	const int32_t kNumBlockHorizontal = 20;
-	const int32_t kNumBlockVirtical = 10;
+	const uint32_t kNumBlockVirtical = 10;
+	const uint32_t kNumBlockHorizontal = 20;
 
 	// ブロック1個分の横幅
 	const float kBlockWidth = 2.0f;
@@ -64,83 +35,99 @@ WorldTransformBlocks_.clear();
 
 	// 要素数を変更する
 
-	WorldTransformBlocks_.resize(kNumBlockVirtical);
-	for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
-		WorldTransformBlocks_[i].resize(kNumBlockHorizontal);
-	}
+	worldTransformBlocks_.resize(kNumBlockVirtical);
 
 	// キューブの生成
 	for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
+		worldTransformBlocks_[i].resize(kNumBlockHorizontal);
+	}
+	// ブロックの生成
+	for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
 		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
-
 			if ((i + j) % 2 == 0) {
 				continue;
 			}
-			WorldTransformBlocks_[i][j] = new WorldTransform();
-			WorldTransformBlocks_[i][j]->Initialize();
-			WorldTransformBlocks_[i][j]->translation_.x = kBlockWidth * j;
-			WorldTransformBlocks_[i][j]->translation_.y = kBlockHeight * i;
+			worldTransformBlocks_[i][j] = new WorldTransform();
+			worldTransformBlocks_[i][j]->Initialize();
+			worldTransformBlocks_[i][j]->translation_.x = kBlockWidth * j;
+			worldTransformBlocks_[i][j]->translation_.y = kBlockHeight * i;
+			skydome_ = new Skydome();
+			modelskydome_ = Model::CreateFromOBJ("skydome", true);
+			skydome_->Initialize(modelskydome_, &camera_);
 		}
 	}
 }
-	
-//ここにシーンの更新を描く
-    void GameScene::Update(){
 
-		//プレイヤーの更新
-	    player_->Update();
-	    for (std::vector<WorldTransform*>&worldTransformBlockLine : WorldTransformBlocks_) {
-		    for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
-			    if (!worldTransformBlock) 
-				    continue;
-				//アフィン変換行列の生成
-			    worldTransformBlock->matWorld_ = math_->MakeAffinMatrix(worldTransformBlock->scale_, worldTransformBlock->rotation_, worldTransformBlock->translation_);
+void GameScene::Update() {
+	// ここにインゲームの更新処理を書
 
-			    worldTransformBlock->TransferMatrix();
-		    }
+	// 自キャラの更新
+	player_->Update();
+	skydome_->Update();
+	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
+		for (WorldTransform*& worldTransformBlock : worldTransformBlockLine) {
+			if (!worldTransformBlock)
+				continue;
+			// アフィン変換行列の生成
+			worldTransformBlock->matWorld_ = math_->MakeAffinMatrix(worldTransformBlock->scale_, worldTransformBlock->rotation_, worldTransformBlock->translation_);
+
+			// 定数バッファに転送する
+			worldTransformBlock->TransferMatrix();
 		}
+	}
 
+#ifdef _DEBUG
+	// デバックの時Cキーを押すと状態が反転する
+	if (Input::GetInstance()->TriggerKey(DIK_C)) {
+		isDebugCameraActive_ = !isDebugCameraActive_;
+	}
+#endif // ! _DEBUG
+	// カメラの処理
+	if (isDebugCameraActive_) {
+		debugCamera_->Update();
+		camera_.matView = debugCamera_->GetCamera().matView;
+		camera_.matProjection = debugCamera_->GetCamera().matProjection;
+		// ビュープロジェクション行列の転送AL3_02_02*/
+		camera_.TransferMatrix();
+	} else {
+		// ビュープロジェクション行列の更新と転送AL3_02_02*/
 
-		//デバッグ
-		#ifdef _DEBUG
-	    if (Input::GetInstance()->TriggerKey(DIK_SPACE)) 
-		{
-		    isDebugCameraActive_ = !isDebugCameraActive_;
-		}
-#endif // DEBUG
-	    if (isDebugCameraActive_) 
-		
-		{
-		    debugCamera_->Update();
-		    camera_.matView = debugCamera_->GetCamera().matView;
-		    camera_.matProjection = debugCamera_->GetCamera().matProjection;
-			//ビュープロジェクション行列の転送
-		    camera_.TransferMatrix();
-	    } else 
-		{
-	    //ビュープロジェクション行列の転送と更新
-		    camera_.UpdateMatrix();
-		
-		}
-
-
+		camera_.UpdateMatrix();
+	}
 }
 
 void GameScene::Draw() {
+
+	// player_->Draw();
+	skydome_->Draw();
+
 	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
-	// ここにシーンの描画を描く
+
 	Model::PreDraw(dxCommon->GetCommandList());
-	for (std::vector<WorldTransform*>&worldTransformBlockLine : WorldTransformBlocks_)
-	{
-		for (WorldTransform* &worldTransformBlock : worldTransformBlockLine) 
-		{
+
+	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
+		for (WorldTransform*& worldTransformBlock : worldTransformBlockLine) {
 			if (!worldTransformBlock)
 				continue;
-				model_->Draw(*worldTransformBlock, camera_);
-			
-			
+			model_->Draw(*worldTransformBlock, camera_);
 		}
-		
 	}
 	Model::PostDraw();
+}
+
+GameScene::~GameScene() {
+	// delete sprite_;
+	delete debugCamera_;
+	delete player_;
+
+	delete model_;
+	delete blockModel_;
+	delete modelskydome_;
+
+	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
+		for (WorldTransform*& worldTransformBlock : worldTransformBlockLine) {
+			delete worldTransformBlock;
+		}
+	}
+	worldTransformBlocks_.clear();
 }

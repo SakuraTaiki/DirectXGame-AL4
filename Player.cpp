@@ -1,4 +1,6 @@
 #include "Player.h"
+#include"cassert"
+using namespace KamataEngine;
 void Player::Initialize(KamataEngine::Model * model, uint32_t textureHandle, KamataEngine::Camera* camera) { 
 	assert(model);
 	model_ = model;
@@ -14,7 +16,9 @@ void Player::Update() {
 }
 
 void Player::Draw() {
-	
+	DirectXCommon* dxcommon = DirectXCommon::GetInstance();
+	Model::PreDraw(dxcommon->GetCommandList());
 	model_->Draw(worldTransform_, *camera_, textureHandle_); 
+	Model::PostDraw();
 	
 }
