@@ -1,9 +1,10 @@
 #pragma once
 #include <KamataEngine.h>
 #include"Math.h"
+#include<numbers>
 class Player {
 public:
-	void Initialize(KamataEngine::Model*model,uint32_t textureHandle,KamataEngine::Camera*camera);
+	void Initialize(KamataEngine::Model*model,KamataEngine::Camera*camera,const Vector3& position);
 	void Update();
 	void Draw();
 
@@ -12,6 +13,12 @@ private:
 	KamataEngine::Model* model_ = nullptr;
 	KamataEngine::Camera* camera_ = nullptr;
 	uint32_t textureHandle_ = 0u;
+
+
+
+	Vector3 velocity_ = {};
+
+	static inline const float kAccelerration = 20;
 
 	Math* math;
 };

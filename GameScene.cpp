@@ -28,8 +28,12 @@ void GameScene::Initialize() {
 	// 自キャラの生成
 	player_ = new Player();
 
+	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(5,10);
+
+
+
 	// 自キャラの初期化
-	player_->Initialize(playerModel_, textureHandle_, &camera_);
+	player_->Initialize(playerModel_, &camera_,playerPosition);
 
 	worldTransform_.Initialize();
 
