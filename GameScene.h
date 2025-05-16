@@ -54,6 +54,8 @@ private:
 
 	Skydome* skydome_ = nullptr;
 
+	Model* playerModel_ = nullptr;
+
 	//マップチップフィールド
 
 	MapChipField* mapChipField_;

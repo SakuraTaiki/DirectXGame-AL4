@@ -1,5 +1,6 @@
 #pragma once
 #include <KamataEngine.h>
+#include"Math.h"
 class Player {
 public:
 	void Initialize(KamataEngine::Model*model,uint32_t textureHandle,KamataEngine::Camera*camera);
@@ -11,4 +12,6 @@ private:
 	KamataEngine::Model* model_ = nullptr;
 	KamataEngine::Camera* camera_ = nullptr;
 	uint32_t textureHandle_ = 0u;
+
+	Math* math;
 };

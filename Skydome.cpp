@@ -9,15 +9,17 @@ void Skydome::Initialize(Model* model, Camera* camera) {
 
 void Skydome::Update() 
 { 
-	
-	worldTransform_.TransferMatrix(); }
+
+	worldTransform_.matWorld_ = math->MakeAffinMatrix(worldTransform_.scale_, worldTransform_.rotation_, worldTransform_.translation_);
+
+	worldTransform_.TransferMatrix(); 
+}
 
 void Skydome::Draw()
 {
 
-DirectXCommon* dxcommon = DirectXCommon::GetInstance();
-	Model::PreDraw(dxcommon->GetCommandList());
+
 model_->Draw(worldTransform_, *camera_);
-	Model::PostDraw();
+	
 
 }

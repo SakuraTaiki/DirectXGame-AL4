@@ -12,13 +12,12 @@ void Player::Initialize(KamataEngine::Model * model, uint32_t textureHandle, Kam
 
 
 void Player::Update() { 
+worldTransform_.matWorld_ = math->MakeAffinMatrix(worldTransform_.scale_, worldTransform_.rotation_, worldTransform_.translation_);
+
 	worldTransform_.TransferMatrix();
 }
 
-void Player::Draw() {
-	DirectXCommon* dxcommon = DirectXCommon::GetInstance();
-	Model::PreDraw(dxcommon->GetCommandList());
-	model_->Draw(worldTransform_, *camera_, textureHandle_); 
-	Model::PostDraw();
+void Player::Draw() { model_->Draw(worldTransform_, *camera_);
+
 	
 }
