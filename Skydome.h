@@ -4,8 +4,12 @@ using namespace KamataEngine;
 class Skydome {
 public:
 	void Initialize(Model* model, Camera * camera);
+
 	void Update();
+
 	void Draw();
+
+	
 
 	private:
 	WorldTransform worldTransform_;
