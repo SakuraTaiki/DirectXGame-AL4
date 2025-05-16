@@ -22,6 +22,8 @@ public:
 
 	~GameScene();
 
+	void GenerateBlocks();
+
 private:
 	////テクスチャーハンドル
 	uint32_t textureHandle_ = 0;
@@ -53,6 +55,7 @@ private:
 	Skydome* skydome_ = nullptr;
 
 	//マップチップフィールド
+
 	MapChipField* mapChipField_;
 
 	// デバッグカメラ有効

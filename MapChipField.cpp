@@ -2,21 +2,28 @@
 #include <map>
 #include <fstream>
 #include <sstream>
-namespace {
+namespace
+{
 
 std::map<std::string, MapChipType> mapChipTable = 
 {
     {"0", MapChipType::kBlank},
+
     {"1", MapChipType::kBlock},
 };
 
 }
 
 void MapChipField::ResetMapChipData() {
+
 	// マップチップデータをリセット
+
 	mapChipData_.data.clear();
+
 	mapChipData_.data.resize(kNumBlockVirtical);
+
 	for (std::vector<MapChipType>& mapChipDataLine : mapChipData_.data) 
+
 	{
 		mapChipDataLine.resize(kNumBlockHorizontal);
 
@@ -27,14 +34,20 @@ void MapChipField::ResetMapChipData() {
 void MapChipField::LoadMapChipCsv(const std::string& filePath) { 
 
 	//マップチップデータをリセット
+
 	ResetMapChipData();
 
 	//ファイルを開く
+
 	std::ifstream file;
+
 	file.open(filePath);
+
 	assert(file.is_open());
 
+
 	//マップチップCSV
+
 	std::stringstream mapChipCsv;
 	
 	//ファイル内容を文字列ストリームにコピー
@@ -65,10 +78,8 @@ void MapChipField::LoadMapChipCsv(const std::string& filePath) {
 
 			if (mapChipTable.contains(word)) 
 			{
-				if (mapChipTable.contains(word))
-				{
+				
 					mapChipData_.data[i][j] = mapChipTable[word];
-				}
 
 			}
 
@@ -92,6 +103,7 @@ MapChipType MapChipField::GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex
 
 		return MapChipType::kBlank;
 	}
+
 	return mapChipData_.data[yIndex][xIndex]; 
 
 }

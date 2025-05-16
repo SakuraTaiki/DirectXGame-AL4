@@ -26,40 +26,10 @@ void GameScene::Initialize() {
 	camera_.Initialize();
 
 	mapChipField_ = new MapChipField;
-	mapChipField_->LoadMapChipCsv("Resources./blocks.csv");
+	mapChipField_->LoadMapChipCsv("Resources/blocks.csv");
 
 
-	// 要素数
-	const uint32_t kNumBlockVirtical = 10;
-	const uint32_t kNumBlockHorizontal = 20;
-
-	// ブロック1個分の横幅
-	const float kBlockWidth = 2.0f;
-	const float kBlockHeight = 2.0f;
-
-	// 要素数を変更する
-
-	worldTransformBlocks_.resize(kNumBlockVirtical);
-
-	// キューブの生成
-	for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
-		worldTransformBlocks_[i].resize(kNumBlockHorizontal);
-	}
-	// ブロックの生成
-	for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
-		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
-			if ((i + j) % 2 == 0) {
-				continue;
-			}
-			worldTransformBlocks_[i][j] = new WorldTransform();
-			worldTransformBlocks_[i][j]->Initialize();
-			worldTransformBlocks_[i][j]->translation_.x = kBlockWidth * j;
-			worldTransformBlocks_[i][j]->translation_.y = kBlockHeight * i;
-			skydome_ = new Skydome();
-			modelskydome_ = Model::CreateFromOBJ("skydome", true);
-			skydome_->Initialize(modelskydome_, &camera_);
-		}
-	}
+	
 }
 
 void GameScene::Update() {
@@ -110,6 +80,7 @@ void GameScene::Draw() {
 	Model::PreDraw(dxCommon->GetCommandList());
 
 	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
+
 		for (WorldTransform*& worldTransformBlock : worldTransformBlockLine) {
 			if (!worldTransformBlock)
 				continue;
@@ -132,13 +103,60 @@ GameScene::~GameScene() {
 	delete modelskydome_;
 
 	//マップチップフィールドの解放
+
 	delete mapChipField_;
 
 
 	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
+
 		for (WorldTransform*& worldTransformBlock : worldTransformBlockLine) {
+
 			delete worldTransformBlock;
 		}
 	}
+
 	worldTransformBlocks_.clear();
+}
+
+void GameScene::GenerateBlocks() 
+{
+	// 要素数
+	const uint32_t kNumBlockVirtical = mapChipField_->GetNumBlockVirtical();
+	const uint32_t kNumBlockHorizontal = mapChipField_->GetNumBlockHorizontal();
+
+	// ブロック1個分の横幅
+	const float kBlockWidth = 2.0f;
+	const float kBlockHeight = 2.0f;
+
+	// 要素数を変更する
+
+	worldTransformBlocks_.resize(numBlockVirtical);
+
+	// キューブの生成
+	for (uint32_t i = 0; i < numBlockVirtical; ++i) {
+		worldTransformBlocks_[i].resize(numBlockHorizontal);
+	}
+	// ブロックの生成
+	for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
+
+		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
+
+			if ((i + j) % 2 == 0) {
+
+				continue;
+			}
+			worldTransformBlocks_[i][j] = new WorldTransform();
+
+			worldTransformBlocks_[i][j]->Initialize();
+
+			worldTransformBlocks_[i][j]->translation_.x = kBlockWidth * j;
+
+			worldTransformBlocks_[i][j]->translation_.y = kBlockHeight * i;
+
+			skydome_ = new Skydome();
+			modelskydome_ = Model::CreateFromOBJ("skydome", true);
+			skydome_->Initialize(modelskydome_, &camera_);
+		}
+	}
+
 }
