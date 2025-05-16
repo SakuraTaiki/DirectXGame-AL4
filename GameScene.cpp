@@ -102,7 +102,7 @@ void GameScene::Update() {
 
 void GameScene::Draw() {
 
-	// player_->Draw();
+	player_->Draw();
 	skydome_->Draw();
 
 	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
@@ -113,6 +113,7 @@ void GameScene::Draw() {
 		for (WorldTransform*& worldTransformBlock : worldTransformBlockLine) {
 			if (!worldTransformBlock)
 				continue;
+
 			model_->Draw(*worldTransformBlock, camera_);
 		}
 	}
