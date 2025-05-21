@@ -18,7 +18,9 @@ private:
 
 	Vector3 velocity_ = {};
 
-	static inline const float kAccelerration = 20;
+	static inline const float kAccelerration = 0.01f;
+
+	static inline const float kAttenuation = 0.01f;
 
 	Math* math;
 };

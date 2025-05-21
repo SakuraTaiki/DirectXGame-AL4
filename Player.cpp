@@ -31,9 +31,17 @@ void Player::Update() {
 		Vector3 acceleration = {};
 
 		if (Input::GetInstance()->PushKey(DIK_RIGHT)) {
-			acceleration.x += kAccelerration;
-		}
 
+			acceleration.x += kAccelerration;
+
+		} else if (Input::GetInstance()->PushKey(DIK_LEFT)) 
+		{
+			acceleration.x -= kAccelerration;
+
+		} /*else {
+			velocity_.x *= (1.0f - kAttenuation);
+		}*/
+		velocity_.x += acceleration.x;
 	
 	}
 
