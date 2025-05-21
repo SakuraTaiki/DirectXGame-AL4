@@ -1,6 +1,10 @@
 #pragma once
 #include <KamataEngine.h>
 using namespace KamataEngine;
+
+Vector3& operator+=(Vector3& lhs, const Vector3& rhv);
+Vector3& operator-=(Vector3& lhs, const Vector3& rhv);
+
 class Math {
 	public:
 	Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2);

@@ -1,5 +1,26 @@
 #include "Math.h"
 
+Vector3& operator+=(Vector3& ihv, const Vector3& rhv) { 
+	ihv.x += rhv.x;
+
+	ihv.y += rhv.y;
+
+	ihv.z += rhv.z;
+
+	return ihv;
+}
+
+Vector3& operator-=(Vector3& ihv, const Vector3& rhv) {
+	ihv.x -= rhv.x;
+
+	ihv.y -= rhv.y;
+
+	ihv.z -= rhv.z;
+
+	return ihv;
+}
+
+
 Matrix4x4 Math::Multiply(const Matrix4x4& m1, const Matrix4x4& m2)
 { 
 	Matrix4x4 result = {};
