@@ -1,8 +1,11 @@
 #include "Math.h"
+#include <numbers>
+
+using namespace KamataEngine;
 
 Vector3& operator+=(Vector3& ihv, const Vector3& rhv) { 
 	ihv.x += rhv.x;
-
+	
 	ihv.y += rhv.y;
 
 	ihv.z += rhv.z;
@@ -175,4 +178,11 @@ Matrix4x4 Math::MakeAffinMatrix(const Vector3& scale, const Vector3& rotate, con
 
 	return result;
 
+}
+
+float Math::Lerp(float x1, float x2, float t) { return (1.0f - t) * x1 + t * x2; }
+
+float Math::EaseInOut(float x1, float x2, float t) {
+	float easedT = -(std::cosf(std::numbers::pi_v<float> * t) - 1.0f) / 2.0f;
+	return Lerp(x1, x2, easedT);
 }

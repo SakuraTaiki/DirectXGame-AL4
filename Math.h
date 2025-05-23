@@ -22,4 +22,8 @@ class Math {
 	Matrix4x4 MakeAffinMatrix(const Vector3& 
 		scale, const Vector3& rotate, const Vector3& translate);
 
+	float Lerp(float x1, float x2, float t);
+
+	float EaseInOut(float x1, float x2, float t);
+
 };
