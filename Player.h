@@ -15,6 +15,8 @@ public:
 		kLeft,
 	};
 
+	const WorldTransform& GetWorldTransform() const { return worldTransform_; }
+
 private:
 	KamataEngine::WorldTransform worldTransform_;
 	KamataEngine::Model* model_ = nullptr;

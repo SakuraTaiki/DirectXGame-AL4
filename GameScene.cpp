@@ -1,6 +1,35 @@
 #include "GameScene.h"
+#include"Math.h"
 
 using namespace KamataEngine;
+
+GameScene::~GameScene() {
+	// delete sprite_;
+
+	delete player_;
+
+	delete model_;
+
+	delete blockModel_;
+
+	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
+
+		for (WorldTransform*& worldTransformBlock : worldTransformBlockLine) {
+
+			delete worldTransformBlock;
+		}
+	}
+
+	worldTransformBlocks_.clear();
+
+	delete debugCamera_;
+
+	delete modelskydome_;
+
+	// マップチップフィールドの解放
+
+	delete mapChipField_;
+}
 
 void GameScene::Initialize() {
 	// ここにインゲームの初期化処理を書く
@@ -17,9 +46,8 @@ void GameScene::Initialize() {
 	playerModel_ = Model::CreateFromOBJ("player", true);
 
 	skydome_ = new Skydome();
-	skydome_->Initialize(modelskydome_, &camera_);
 
-	
+	skydome_->Initialize(modelskydome_, &camera_);
 
 	blockModel_ = Model::Create();
 
@@ -44,8 +72,18 @@ void GameScene::Initialize() {
 
 	GenerateBlocks();
 
+	CameraController_ = new CameraController();
 
+	CameraController_->Initialize(&camera_);
+
+	CameraController_->SetTarget(player_);
+
+	CameraController_->Reset();
 	
+	CameraController::Rect cameraArea = {12.0f, 100 - 12.0f, 6.0f, 6.0f};
+
+	CameraController_->SetMovableArea(cameraArea);
+
 }
 
 void GameScene::Update() {
@@ -54,6 +92,10 @@ void GameScene::Update() {
 	// 自キャラの更新
 	player_->Update();
 	
+	skydome_->Update();
+
+	CameraController_->Update();
+
 	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
 		for (WorldTransform*& worldTransformBlock : worldTransformBlockLine) {
 			if (!worldTransformBlock)
@@ -85,7 +127,9 @@ void GameScene::Update() {
 		camera_.UpdateMatrix();
 	}
 
-	skydome_->Update();
+
+
+
 }
 
 void GameScene::Draw() {
@@ -146,36 +190,6 @@ void GameScene::GenerateBlocks() {
 	}
 }
 
-GameScene::~GameScene() {
-	// delete sprite_;
 
-	delete player_;
-
-	delete model_;
-
-	delete blockModel_;
-
-	
-
-
-	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
-
-		for (WorldTransform*& worldTransformBlock : worldTransformBlockLine) {
-
-			delete worldTransformBlock;
-		}
-	}
-
-	worldTransformBlocks_.clear();
-
-	delete debugCamera_;
-
-	delete modelskydome_;
-
-	// マップチップフィールドの解放
-
-	delete mapChipField_;
-
-}
 
 

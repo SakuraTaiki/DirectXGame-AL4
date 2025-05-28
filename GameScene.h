@@ -1,11 +1,10 @@
 #pragma once
 #include "KamataEngine.h"
-#include "Math.h"
 #include "Player.h"
 #include "Skydome.h"
 #include <vector>
 #include "MapChipField.h"
-
+#include "CameraController.h"
 using namespace KamataEngine;
 
 // ゲームシーン
@@ -59,6 +58,8 @@ private:
 	//マップチップフィールド
 
 	MapChipField* mapChipField_;
+
+	CameraController* CameraController_;
 
 	// デバッグカメラ有効
 	bool isDebugCameraActive_ = false;
