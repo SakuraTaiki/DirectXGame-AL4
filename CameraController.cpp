@@ -15,9 +15,15 @@ void CameraController::Update()
 
 	const WorldTransform& targetWorldTransform = target_->GetWorldTransform();
 
+	const Vector3& targetVelocity = target_->GetVelocity();
+
 	//追従対象とオフセットからカメラの座標を計算
 
-	destination_ = targetWorldTransform.translation_ + targetOffset_;
+	destination_ = targetWorldTransform.translation_ + targetOffset_+targetVelocity*kVelocityBias;
+
+	//座標補間によりゆったり追従
+
+	camera_->translation_ =Lerp(camera_->translation_, destination_, kInterpolationRate);
 
 	//移動範囲制限
 

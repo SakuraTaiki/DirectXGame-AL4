@@ -43,5 +43,7 @@ private:
 	KamataEngine::Vector3 destination_;
 	
 	static inline const float kInterpolationRate = 0.1f;
+
+	static inline const float kVelocityBias = 0.1f;
 };
 
