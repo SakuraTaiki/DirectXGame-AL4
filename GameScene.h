@@ -5,6 +5,7 @@
 #include <vector>
 #include "MapChipField.h"
 #include "CameraController.h"
+#include "Math.h"
 using namespace KamataEngine;
 
 // ゲームシーン
@@ -47,7 +48,7 @@ private:
 	// 自キャラ
 	Player* player_ = nullptr;
 
-	Math* math_ = nullptr;
+	
 
 	Model* modelskydome_ = nullptr;
 

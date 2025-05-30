@@ -56,7 +56,7 @@ void GameScene::Initialize() {
 	// 自キャラの生成
 	player_ = new Player();
 
-	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(5,10);
+	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(1,18);
 
 
 
@@ -100,11 +100,11 @@ void GameScene::Update() {
 		for (WorldTransform*& worldTransformBlock : worldTransformBlockLine) {
 			if (!worldTransformBlock)
 				continue;
-			// アフィン変換行列の生成
-			worldTransformBlock->matWorld_ = math_->MakeAffinMatrix(worldTransformBlock->scale_, worldTransformBlock->rotation_, worldTransformBlock->translation_);
 
-			// 定数バッファに転送する
-			worldTransformBlock->TransferMatrix();
+			worldTransformBlock->matWorld_ =MakeAffineMatrix(worldTransformBlock->scale_, worldTransformBlock->rotation_, worldTransformBlock->translation_);
+
+
+			WorldTransformUpdate(*worldTransformBlock);
 		}
 	}
 
@@ -126,9 +126,6 @@ void GameScene::Update() {
 
 		camera_.UpdateMatrix();
 	}
-
-
-
 
 }
 

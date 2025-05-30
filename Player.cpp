@@ -20,6 +20,10 @@ void Player::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera
 
 	worldTransform_.rotation_.y = std::numbers::pi_v<float> / 2.0f;
 
+	
+
+
+
 	//座標をマップチップ番号で指定
 
 	camera_ = camera;
@@ -153,10 +157,12 @@ void Player::Update() {
 
 		float destinationRotationY = destinationRotationYTable[static_cast<uint32_t>(lrDirection_)];
 
-		worldTransform_.rotation_.y =math->EaseInOut(destinationRotationY, turnFirstRotationY_, turnTimer_ / kTimeTurn);
+		worldTransform_.rotation_.y = EaseInOut(destinationRotationY, turnFirstRotationY_, turnTimer_ / kTimeTurn);
 	}
 	// 行列更新
-	worldTransform_.matWorld_ = math->MakeAffinMatrix(worldTransform_.scale_, worldTransform_.rotation_, worldTransform_.translation_);
+	
+	worldTransform_.matWorld_ = MakeAffineMatrix(worldTransform_.scale_, worldTransform_.rotation_, worldTransform_.translation_);
+
 
 	worldTransform_.TransferMatrix();
 }

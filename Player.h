@@ -69,6 +69,4 @@ private:
 
 	static inline const float kJumpAcceleration = 10.0f;
 
-
-	Math* math;
 };

@@ -1,26 +1,34 @@
 #include "Math.h"
+#include <cmath>
 #include <numbers>
 
-using namespace KamataEngine;
-
-Vector3& operator+=(Vector3& ihv, const Vector3& rhv) { 
-	ihv.x += rhv.x;
-	
-	ihv.y += rhv.y;
-
-	ihv.z += rhv.z;
-
-	return ihv;
+// 02_06の29枚目(CameraControllerのUpdate)で必要
+const Vector3 operator*(const Vector3& v1, const float f) {
+	Vector3 temp(v1);
+	return temp *= f;
 }
 
-Vector3& operator-=(Vector3& ihv, const Vector3& rhv) {
-	ihv.x -= rhv.x;
+// 02_06のCameraControllerのUpdate/Reset関数で必要
+const Vector3 operator+(const Vector3& v1, const Vector3& v2) {
+	Vector3 temp(v1);
+	return temp += v2;
+}
 
-	ihv.y -= rhv.y;
+// 02_06のスライド24枚目のLerp関数
+Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t) { return Vector3(Lerp(v1.x, v2.x, t), Lerp(v1.y, v2.y, t), Lerp(v1.z, v2.z, t)); }
 
-	ihv.z -= rhv.z;
+Vector3& operator+=(Vector3& lhv, const Vector3& rhv) {
+	lhv.x += rhv.x;
+	lhv.y += rhv.y;
+	lhv.z += rhv.z;
+	return lhv;
+}
 
-	return ihv;
+Vector3& operator-=(Vector3& lhv, const Vector3& rhv) {
+	lhv.x -= rhv.x;
+	lhv.y -= rhv.y;
+	lhv.z -= rhv.z;
+	return lhv;
 }
 
 Vector3& operator*=(Vector3& v, float s) {
@@ -37,19 +45,71 @@ Vector3& operator/=(Vector3& v, float s) {
 	return v;
 }
 
-Vector3 operator*(const Vector3& v1, const float f) {
-	Vector3 temp(v1);
-	return temp *= f;
+Matrix4x4 MakeIdentityMatrix() {
+	static const Matrix4x4 result{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f};
 
+	return result;
 }
 
-Vector3 operator+(Vector3& v1, Vector3 v2) {
-	Vector3 temp(v1);
-	return temp += v2;
+Matrix4x4 MakeScaleMatrix(const Vector3& scale) {
+
+	Matrix4x4 result{scale.x, 0.0f, 0.0f, 0.0f, 0.0f, scale.y, 0.0f, 0.0f, 0.0f, 0.0f, scale.z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f};
+
+	return result;
 }
 
+Matrix4x4 MakeRotateXMatrix(float theta) {
+	float sin = std::sin(theta);
+	float cos = std::cos(theta);
 
+	Matrix4x4 result{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, cos, sin, 0.0f, 0.0f, -sin, cos, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f};
 
+	return result;
+}
+
+Matrix4x4 MakeRotateYMatrix(float theta) {
+	float sin = std::sin(theta);
+	float cos = std::cos(theta);
+
+	Matrix4x4 result{cos, 0.0f, -sin, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, sin, 0.0f, cos, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f};
+
+	return result;
+}
+
+Matrix4x4 MakeRotateZMatrix(float theta) {
+	float sin = std::sin(theta);
+	float cos = std::cos(theta);
+
+	Matrix4x4 result{cos, sin, 0.0f, 0.0f, -sin, cos, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f};
+
+	return result;
+}
+
+Matrix4x4 MakeTranslateMatrix(const Vector3& translate) {
+	Matrix4x4 result{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, translate.x, translate.y, translate.z, 1.0f};
+
+	return result;
+}
+
+Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rot, const Vector3& translate) {
+
+	// スケーリング行列の作成
+	Matrix4x4 matScale = MakeScaleMatrix(scale);
+
+	Matrix4x4 matRotX = MakeRotateXMatrix(rot.x);
+	Matrix4x4 matRotY = MakeRotateYMatrix(rot.y);
+	Matrix4x4 matRotZ = MakeRotateZMatrix(rot.z);
+	// 回転行列の合成
+	Matrix4x4 matRot = matRotZ * matRotX * matRotY;
+
+	// 平行移動行列の作成
+	Matrix4x4 matTrans = MakeTranslateMatrix(translate);
+
+	// スケーリング、回転、平行移動の合成
+	Matrix4x4 matTransform = matScale * matRot * matTrans;
+
+	return matTransform;
+}
 
 Matrix4x4& operator*=(Matrix4x4& lhm, const Matrix4x4& rhm) {
 	Matrix4x4 result{};
@@ -71,167 +131,27 @@ Matrix4x4 operator*(const Matrix4x4& m1, const Matrix4x4& m2) {
 	return result *= m2;
 }
 
+// ワールドトランスフォーム更新(02_03の最後)
+void WorldTransformUpdate(WorldTransform& worldTransform) {
 
+	Matrix4x4 affin_mat = MakeAffineMatrix(worldTransform.scale_, worldTransform.rotation_, worldTransform.translation_);
 
-Matrix4x4 Math::Multiply(const Matrix4x4& m1, const Matrix4x4& m2)
-{ 
-	Matrix4x4 result = {};
-	result.m[0][0] = (m1.m[0][0] * m2.m[0][0]) + (m1.m[0][1] * m2.m[1][0]) + (m1.m[0][2] * m2.m[2][0]) + (m1.m[0][3] * m2.m[3][0]);
-	result.m[0][1] = (m1.m[0][0] * m2.m[0][1]) + (m1.m[0][1] * m2.m[1][1]) + (m1.m[0][2] * m2.m[2][1]) + (m1.m[0][3] * m2.m[3][1]);
-	result.m[0][2] = (m1.m[0][0] * m2.m[0][2]) + (m1.m[0][1] * m2.m[1][2]) + (m1.m[0][2] * m2.m[2][2]) + (m1.m[0][3] * m2.m[3][2]);
-	result.m[0][3] = (m1.m[0][0] * m2.m[0][3]) + (m1.m[0][1] * m2.m[1][3]) + (m1.m[0][2] * m2.m[2][3]) + (m1.m[0][3] * m2.m[3][3]);
+	worldTransform.matWorld_ = affin_mat;
 
-	result.m[1][0] = (m1.m[1][0] * m2.m[0][0]) + (m1.m[1][1] * m2.m[1][0]) + (m1.m[1][2] * m2.m[2][0]) + (m1.m[1][3] * m2.m[3][0]);
-	result.m[1][1] = (m1.m[1][0] * m2.m[0][1]) + (m1.m[1][1] * m2.m[1][1]) + (m1.m[1][2] * m2.m[2][1]) + (m1.m[1][3] * m2.m[3][1]);
-	result.m[1][2] = (m1.m[1][0] * m2.m[0][2]) + (m1.m[1][1] * m2.m[1][2]) + (m1.m[1][2] * m2.m[2][2]) + (m1.m[1][3] * m2.m[3][2]);
-	result.m[1][3] = (m1.m[1][0] * m2.m[0][3]) + (m1.m[1][1] * m2.m[1][3]) + (m1.m[1][2] * m2.m[2][3]) + (m1.m[1][3] * m2.m[3][3]);
-
-	result.m[2][0] = (m1.m[2][0] * m2.m[0][0]) + (m1.m[2][1] * m2.m[1][0]) + (m1.m[2][2] * m2.m[2][0]) + (m1.m[2][3] * m2.m[3][0]);
-	result.m[2][1] = (m1.m[2][0] * m2.m[0][1]) + (m1.m[2][1] * m2.m[1][1]) + (m1.m[2][2] * m2.m[2][1]) + (m1.m[2][3] * m2.m[3][1]);
-	result.m[2][2] = (m1.m[2][0] * m2.m[0][2]) + (m1.m[2][1] * m2.m[1][2]) + (m1.m[2][2] * m2.m[2][2]) + (m1.m[2][3] * m2.m[3][2]);
-	result.m[2][3] = (m1.m[2][0] * m2.m[0][3]) + (m1.m[2][1] * m2.m[1][3]) + (m1.m[2][2] * m2.m[2][3]) + (m1.m[2][3] * m2.m[3][3]);
-
-	result.m[3][0] = (m1.m[3][0] * m2.m[0][0]) + (m1.m[3][1] * m2.m[1][0]) + (m1.m[3][2] * m2.m[2][0]) + (m1.m[3][3] * m2.m[3][0]);
-	result.m[3][1] = (m1.m[3][0] * m2.m[0][1]) + (m1.m[3][1] * m2.m[1][1]) + (m1.m[3][2] * m2.m[2][1]) + (m1.m[3][3] * m2.m[3][1]);
-	result.m[3][2] = (m1.m[3][0] * m2.m[0][2]) + (m1.m[3][1] * m2.m[1][2]) + (m1.m[3][2] * m2.m[2][2]) + (m1.m[3][3] * m2.m[3][2]);
-	result.m[3][3] = (m1.m[3][0] * m2.m[0][3]) + (m1.m[3][1] * m2.m[1][3]) + (m1.m[3][3] * m2.m[2][3]) + (m1.m[3][3] * m2.m[3][3]);
-	return result;
+	// 定数バッファに転送する
+	worldTransform.TransferMatrix();
 }
 
-Matrix4x4 Math::MakeTranslateMatrix(const Vector3& translate)
-{ 
-	Matrix4x4 result = {};
-	result.m[0][0] = 1;
-	result.m[0][1] = 0;
-	result.m[0][2] = 0;
-	result.m[0][3] = 0;
-	result.m[1][0] = 0;
-	result.m[1][1] = 1;
-	result.m[1][2] = 0;
-	result.m[1][3] = 0;
-	result.m[2][0] = 0;
-	result.m[2][1] = 0;
-	result.m[2][2] = 1;
-	result.m[2][3] = 0;
-	result.m[3][0] = translate.x;
-	result.m[3][1] = translate.y;
-	result.m[3][2] = translate.z;
-	result.m[3][3] = 1;
-	return result;
-}
+float Lerp(float x1, float x2, float t) { return (1.0f - t) * x1 + t * x2; }
 
-Matrix4x4 Math::MakeScaleMatrix(const Vector3& scale)
-{ 
-	Matrix4x4 result = {};
-	result.m[0][0] = scale.x;
-	result.m[0][1] = 0;
-	result.m[0][2] = 0;
-	result.m[0][3] = 0;
-	result.m[1][0] = 0;
-	result.m[1][1] = scale.y;
-	result.m[1][2] = 0;
-	result.m[1][3] = 0;
-	result.m[2][0] = 0;
-	result.m[2][1] = 0;
-	result.m[2][2] = scale.z;
-	result.m[2][3] = 0;
-	result.m[3][0] = 0;
-	result.m[3][1] = 0;
-	result.m[3][2] = 0;
-	result.m[3][3] = 1;
-	return result;
-}
-
-Matrix4x4 Math::MakeRotateXMatrix(float radian)
-{ 
-	Matrix4x4 result = {};
-	result.m[0][0] = 1;
-	result.m[0][1] = 0;
-	result.m[0][2] = 0;
-	result.m[0][3] = 0;
-	result.m[1][0] = 0;
-	result.m[1][1] = std::cos(radian);
-	result.m[1][2] = std::sin(radian);
-	result.m[1][3] = 0;
-	result.m[2][0] = 0;
-	result.m[2][1] = -std::sin(radian);
-	result.m[2][2] = std::cos(radian);
-	result.m[2][3] = 0;
-	result.m[3][0] = 0;
-	result.m[3][1] = 0;
-	result.m[3][2] = 0;
-	result.m[3][3] = 1;
-	return result;
-	
-}
-
-Matrix4x4 Math::MakeRotateYMatrix(float radian)
-{ 
-	Matrix4x4 result = {};
-	result.m[0][0] = std::cos(radian);
-	result.m[0][1] = 0;
-	result.m[0][2] = -std::sin(radian);
-	result.m[0][3] = 0;
-	result.m[1][0] = 0;
-	result.m[1][1] = 1;
-	result.m[1][2] = 0;
-	result.m[1][3] = 0;
-	result.m[2][0] = std::sin(radian);
-	result.m[2][1] = 0;
-	result.m[2][2] = std::cos(radian);
-	result.m[2][3] = 0;
-	result.m[3][0] = 0;
-	result.m[3][1] = 0;
-	result.m[3][2] = 0;
-	result.m[3][3] = 1;
-	return result;
-}
-
-Matrix4x4 Math::MakeRotateZMatrix(float radian) 
-{
-	Matrix4x4 result = {};
-	result.m[0][0] = std::cos(radian);
-	result.m[0][1] = std::sin(radian);
-	result.m[0][2] = 0;
-	result.m[0][3] = 0;
-	result.m[1][0] = -std::sin(radian);
-	result.m[1][1] = std::cos(radian);
-	result.m[1][2] = 0;
-	result.m[1][3] = 0;
-	result.m[2][0] = 0;
-	result.m[2][1] = 0;
-	result.m[2][2] = 1;
-	result.m[2][3] = 0;
-	result.m[3][0] = 0;
-	result.m[3][1] = 0;
-	result.m[3][2] = 0;
-	result.m[3][3] = 1;
-	return result;
-}
-
-Matrix4x4 Math::MakeAffinMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate)
-{
-	Matrix4x4 result{};
-	// 拡大縮小行列を生成する
-	Matrix4x4 scaleMatrix = MakeScaleMatrix(scale);
-
-	Matrix4x4 rotateXMatrix = MakeRotateXMatrix(rotate.x);
-	Matrix4x4 rotateYMatrix = MakeRotateYMatrix(rotate.y);
-	Matrix4x4 rotateZMatrix = MakeRotateZMatrix(rotate.z);
-	Matrix4x4 rotateXYZMatrix = Multiply(rotateXMatrix, Multiply(rotateYMatrix, rotateZMatrix));
-
-	// 平行移動行列を生成する
-	Matrix4x4 translateMatrix = MakeTranslateMatrix(translate);
-
-	result = Multiply(Multiply(scaleMatrix, rotateXYZMatrix), translateMatrix);
-
-	return result;
-
-}
-
-float Math::Lerp(float x1, float x2, float t) { return (1.0f - t) * x1 + t * x2; }
-
-float Math::EaseInOut(float x1, float x2, float t) {
+float EaseInOut(float x1, float x2, float t) {
 	float easedT = -(std::cosf(std::numbers::pi_v<float> * t) - 1.0f) / 2.0f;
+
 	return Lerp(x1, x2, easedT);
+}
+
+bool IsCollision(const AABB& aabb1, const AABB& aabb2) {
+	return (aabb1.min.x <= aabb2.max.x && aabb1.max.x >= aabb2.min.x) && // x軸
+	       (aabb1.min.y <= aabb2.max.y && aabb1.max.y >= aabb2.min.y) && // y軸
+	       (aabb1.min.z <= aabb2.max.z && aabb1.max.z >= aabb2.min.z);   // z軸
 }
