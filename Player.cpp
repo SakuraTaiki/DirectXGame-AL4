@@ -1,6 +1,10 @@
 #define NOMINMAX
 
 #include "Player.h"
+#include "Math.h"
+#include "MapChipField.h"
+
+
 #include"cassert"
 #include <algorithm>
 #include<numbers>
@@ -30,9 +34,7 @@ void Player::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera
 }
 
 
-
-void Player::Update() {
-
+void Player::InputMove() {
 	if (onGround_) {
 		// 移動入力
 		if (Input::GetInstance()->PushKey(DIK_RIGHT) || Input::GetInstance()->PushKey(DIK_LEFT)) {
@@ -61,8 +63,7 @@ void Player::Update() {
 
 					turnTimer_ = kTimeTurn;
 				}
-			}
-			else if (Input::GetInstance()->PushKey(DIK_LEFT)) {
+			} else if (Input::GetInstance()->PushKey(DIK_LEFT)) {
 				// 右移動中の左入力
 
 				if (velocity_.x > 0.0f) {
@@ -101,8 +102,7 @@ void Player::Update() {
 			velocity_.x *= (1.0f - kAttenuation);
 		}
 
-		if (Input::GetInstance()->PushKey(DIK_UP))
-		{
+		if (Input::GetInstance()->PushKey(DIK_UP)) {
 			// ジャンプ初速
 			velocity_ += Vector3(0, kJumpAcceleration / 60.0f, 0);
 		}
@@ -118,9 +118,89 @@ void Player::Update() {
 
 		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
 	}
+}
 
-	// 移動
-	worldTransform_.translation_ += velocity_;
+
+
+void Player::CheckMapCollision(CollisionMapInfo& info) {
+
+	CheckMapCollisionUp(info);
+	CheckMapCollisionDown(info);
+	CheckMapCollisionRight(info);
+	CheckMapCollisionLeft(info);
+}
+
+void Player::CheckMapCollisionUp(CollisionMapInfo& info) {
+
+	if (info.move.y <= 0) {
+		return;
+	}
+
+	std::array<Vector3, kNumCorner> positionsNew;
+
+	for (uint32_t i = 0; i < positionsNew.size(); ++i) {
+		positionsNew[i] = CornerPosition(worldTransform_.translation_ + info.move, static_cast<Corner>(i));
+	}
+
+	MapChipType mapChipType;
+
+	//真上の当たり判定を行う
+
+	bool hit = false;
+
+		// 左上点の判定
+	MapChipField::IndexSet indexSet;
+	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftTop]);
+	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
+
+	if (mapChipType == MapChipType::kBlock) {
+		hit = true;
+	}
+
+	// 右上点の判定
+	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightTop]);
+	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
+
+	if (mapChipType == MapChipType::kBlock) {
+		hit = true;
+	}
+
+
+};
+
+void Player::CheckMapCollisionDown(CollisionMapInfo& info) { info; }
+void Player::CheckMapCollisionRight(CollisionMapInfo& info) { info; }
+void Player::CheckMapCollisionLeft(CollisionMapInfo& info) { info; }
+
+Vector3 Player::CornerPosition(const Vector3& center, Corner corner) {
+
+	Vector3 offsetTable[kNumCorner] = {
+	    {+kWidth / 2.0f, -kHeight / 2.0f, 0}, //  kRightBottom
+	    {-kWidth / 2.0f, -kHeight / 2.0f, 0}, //  kLeftBottom
+	    {+kWidth / 2.0f, +kHeight / 2.0f, 0}, //  kRightTop
+	    {-kWidth / 2.0f, +kHeight / 2.0f, 0}  //  kLeftTop
+	};
+
+	return center + offsetTable[static_cast<uint32_t>(corner)];
+}
+
+
+void Player::Update() {
+
+	InputMove();
+
+	//衝突情報を初期化
+	CollisionMapInfo collisionMapInfo;
+
+	//移動量に速度の値をコピー
+
+	collisionMapInfo.move = velocity_;
+
+	//マップ衝突判定チェック
+	CheckMapCollision(collisionMapInfo);
+
+	//	worldTransform_.translation_ += velocity_;
+
 
 	bool landing = false;
 

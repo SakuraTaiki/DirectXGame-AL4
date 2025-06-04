@@ -53,12 +53,15 @@ void GameScene::Initialize() {
 
 	debugCamera_ = new DebugCamera(1280, 720);
 
+	mapChipField_ = new MapChipField;
+	mapChipField_->LoadMapChipCsv("Resources/blocks.csv");
+
 	// 自キャラの生成
 	player_ = new Player();
 
 	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(1,18);
 
-
+	player_->SetMapChipField(mapChipField_);
 
 	// 自キャラの初期化
 	player_->Initialize(playerModel_, &camera_,playerPosition);
@@ -67,8 +70,7 @@ void GameScene::Initialize() {
 
 	camera_.Initialize();
 
-	mapChipField_ = new MapChipField;
-	mapChipField_->LoadMapChipCsv("Resources/blocks.csv");
+	
 
 	GenerateBlocks();
 
@@ -83,6 +85,8 @@ void GameScene::Initialize() {
 	CameraController::Rect cameraArea = {12.0f, 100 - 12.0f, 6.0f, 6.0f};
 
 	CameraController_->SetMovableArea(cameraArea);
+
+
 
 }
 
