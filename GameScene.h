@@ -43,6 +43,9 @@ private:
 
 	std::vector<std::vector<WorldTransform*>> worldTransformBlocks_;
 
+		// デバッグカメラ有効
+	bool isDebugCameraActive_ = false;
+
 	DebugCamera* debugCamera_ = nullptr;
 
 	// 自キャラ
@@ -62,6 +65,5 @@ private:
 
 	CameraController* CameraController_;
 
-	// デバッグカメラ有効
-	bool isDebugCameraActive_ = false;
+
 };

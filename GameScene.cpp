@@ -39,41 +39,40 @@ void GameScene::Initialize() {
 	// sprite_ = Sprite::Create(textureHandle_, {100, 50});
 
 
-	modelskydome_ = Model::CreateFromOBJ("skydome", true);
-	
-	model_ = Model::CreateFromOBJ("block",true);
+	model_ = Model::CreateFromOBJ("block", true);
 
-	playerModel_ = Model::CreateFromOBJ("player", true);
+	worldTransform_.Initialize();
 
-	skydome_ = new Skydome();
-
-	skydome_->Initialize(modelskydome_, &camera_);
+	camera_.Initialize();
 
 	blockModel_ = Model::Create();
 
 	debugCamera_ = new DebugCamera(1280, 720);
 
+	skydome_ = new Skydome();
+
+	modelskydome_ = Model::CreateFromOBJ("skydome", true);
+	
+	skydome_->Initialize(modelskydome_, &camera_);
+
 	mapChipField_ = new MapChipField;
 	mapChipField_->LoadMapChipCsv("Resources/blocks.csv");
 
+	GenerateBlocks();
+
 	// 自キャラの生成
 	player_ = new Player();
+
+	playerModel_ = Model::CreateFromOBJ("player", true);
 
 	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(1,18);
 
 	player_->SetMapChipField(mapChipField_);
 
 	// 自キャラの初期化
-	player_->Initialize(playerModel_, &camera_,playerPosition);
-
-	worldTransform_.Initialize();
-
-	camera_.Initialize();
+	player_->Initialize(playerModel_, &camera_, playerPosition);
 
 	
-
-	GenerateBlocks();
-
 	CameraController_ = new CameraController();
 
 	CameraController_->Initialize(&camera_);
@@ -86,8 +85,39 @@ void GameScene::Initialize() {
 
 	CameraController_->SetMovableArea(cameraArea);
 
+}
 
 
+void GameScene::GenerateBlocks() {
+	// 要素数
+	const uint32_t kNumBlockVirtical = mapChipField_->GetNumBlockVirtical();
+	const uint32_t kNumBlockHorizontal = mapChipField_->GetNumBlockHorizontal();
+
+	// 要素数を変更する
+
+	worldTransformBlocks_.resize(kNumBlockVirtical);
+
+	// キューブの生成
+	for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
+		worldTransformBlocks_[i].resize(kNumBlockHorizontal);
+	}
+	// ブロックの生成
+	for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
+
+		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
+
+			if (mapChipField_->GetMapChipTypeByIndex(j, i) == MapChipType::kBlock) {
+
+				WorldTransform* worldTransForm = new WorldTransform();
+
+				worldTransForm->Initialize();
+
+				worldTransformBlocks_[i][j] = worldTransForm;
+
+				worldTransformBlocks_[i][j]->translation_ = mapChipField_->GetMapChipPositionByIndex(j, i);
+			}
+		}
+	}
 }
 
 void GameScene::Update() {
@@ -156,40 +186,7 @@ void GameScene::Draw() {
 	Model::PostDraw();
 }
 
-void GameScene::GenerateBlocks() {
-	// 要素数
-	const uint32_t kNumBlockVirtical = mapChipField_->GetNumBlockVirtical();
-	const uint32_t kNumBlockHorizontal = mapChipField_->GetNumBlockHorizontal();
 
-
-
-	// 要素数を変更する
-
-	worldTransformBlocks_.resize(kNumBlockVirtical);
-
-	// キューブの生成
-	for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
-		worldTransformBlocks_[i].resize(kNumBlockHorizontal);
-	}
-	// ブロックの生成
-	for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
-
-		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
-
-			if (mapChipField_->GetMapChipTypeByIndex(j, i) == MapChipType::kBlock) {
-
-				WorldTransform* worldTransForm = new WorldTransform();
-
-				worldTransForm->Initialize();
-
-				worldTransformBlocks_[i][j] = worldTransForm;
-
-				worldTransformBlocks_[i][j]->translation_ = mapChipField_->GetMapChipPositionByIndex(j, i);
-			}
-
-		}
-	}
-}
 
 
 
