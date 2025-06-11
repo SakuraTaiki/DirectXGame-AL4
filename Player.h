@@ -91,4 +91,14 @@ private:
 	void CheckMapCollisionLeft(CollisionMapInfo& info);
 	// 02_07 スライド17枚目
 	Vector3 CornerPosition(const Vector3& center, Corner corner);
+
+	void UpdateOnGround(const CollisionMapInfo& info);
+
+	void UpdateOnWall(const CollisionMapInfo& info);
+
+	static inline const float kAttenuationLanding = 0.0f;
+
+	static inline const float kGroundSearchHeight = 0.06f;
+
+	static inline const float kAttenuationWall = 0.2f;
 };
