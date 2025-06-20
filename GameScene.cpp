@@ -29,6 +29,9 @@ GameScene::~GameScene() {
 	// マップチップフィールドの解放
 
 	delete mapChipField_;
+
+		// 02_09 10枚目 敵クラス削除
+	delete enemy_;
 }
 
 void GameScene::Initialize() {
@@ -85,6 +88,14 @@ void GameScene::Initialize() {
 
 	CameraController_->SetMovableArea(cameraArea);
 
+
+		// 02_09 10枚目 敵クラス
+	enemy_ = new Enemy();
+	// 02_09 10枚目 敵モデル
+	enemy_model_ = Model::CreateFromOBJ("enemy");
+	// 02_09 10枚目 敵位置決めて敵クラス初期化
+	Vector3 enemyPosition = mapChipField_->GetMapChipPositionByIndex(14, 18);
+	enemy_->Initialize(enemy_model_, &camera_, enemyPosition);
 }
 
 
@@ -130,6 +141,9 @@ void GameScene::Update() {
 
 	CameraController_->Update();
 
+		// 02_09 12枚目 敵更新
+	enemy_->Update();
+
 	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
 		for (WorldTransform*& worldTransformBlock : worldTransformBlockLine) {
 			if (!worldTransformBlock)
@@ -161,6 +175,8 @@ void GameScene::Update() {
 		camera_.UpdateMatrix();
 	}
 
+
+
 }
 
 void GameScene::Draw() {
@@ -183,7 +199,9 @@ void GameScene::Draw() {
 	}
 	player_->Draw();
 	skydome_->Draw();
+	enemy_->Draw();
 	Model::PostDraw();
+	
 }
 
 

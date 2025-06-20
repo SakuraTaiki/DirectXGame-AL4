@@ -6,6 +6,8 @@
 #include "MapChipField.h"
 #include "CameraController.h"
 #include "Math.h"
+#include "Enemy.h"
+
 using namespace KamataEngine;
 
 // ゲームシーン
@@ -65,5 +67,8 @@ private:
 
 	CameraController* CameraController_;
 
-
+	// 02_09 10枚目 エネミークラス
+	Enemy* enemy_ = nullptr;
+	// 02_09 10枚目 エネミーモデル
+	KamataEngine::Model* enemy_model_ = nullptr;
 };
