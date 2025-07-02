@@ -19,34 +19,46 @@ void Enemy::Initialize(Model* model, Camera* camera, const Vector3& position) {
 	// 02_09 7枚目 角度調整
 	worldTransform_.rotation_.y = std::numbers::pi_v<float> * 3.0f / 2.0f;
 
+	// 02_09 16枚目
 	velocity_ = {-kWalkSpeed, 0, 0};
-
-	walkTimer_ = 0.0f;
-
+	// 02_09 20枚目
+	walkTimer = 0.0f;
 }
-void Enemy::Update() 
-{
-	//02_09 16枚目
 
+// 02_09 スライド5枚目
+void Enemy::Update() {
+
+	// 02_09 16枚目 移動
 	worldTransform_.translation_ += velocity_;
 
-	//タイマーを加算
-	walkTimer_ += 1.0f / 60.0f;
+	// 02_09 20枚目
+	walkTimer += 1.0f / 60.0f;
 
-		// 02_09 23枚目 回転アニメーション
-	worldTransform_.rotation_.x = std::sin(std::numbers::pi_v<float> * 2.0f * walkTimer_ / kWalkMotionTime);
+	// 02_09 23枚目 回転アニメーション
+	worldTransform_.rotation_.x = std::sin(std::numbers::pi_v<float> * 2.0f * walkTimer / kWalkMotionTime);
 
-	float param = std::sin(std::numbers::pi_v<float> * 2.0f * walkTimer_ / kWalkMotionTime);
-
-	float degree = kWallMotionAngleStart + kWallMotionAngleEnd * (param + 1.0f) / 2.0f;
-
-	worldTransform_.rotation_.x = degree * (float(std::numbers::pi_v<float> / 180.0f));
-
+	// 02_09 スライド8枚目 ワールド行列更新
 	WorldTransformUpdate(worldTransform_);
 }
+
+// 02_09 スライド5枚目
 void Enemy::Draw() {
+
 	// 02_09 スライド9枚目  モデル描画
 	model_->Draw(worldTransform_, *camera_);
+}
+
+// 02_10 スライド14枚目
+AABB Enemy::GetAABB() {
+
+	Vector3 worldPos = GetWorldPosition();
+
+	AABB aabb;
+
+	aabb.min = {worldPos.x - kWidth / 2.0f, worldPos.y - kHeight / 2.0f, worldPos.z - kWidth / 2.0f};
+	aabb.max = {worldPos.x + kWidth / 2.0f, worldPos.y + kHeight / 2.0f, worldPos.z + kWidth / 2.0f};
+
+	return aabb;
 }
 
 // 02_10 スライド14枚目
@@ -62,18 +74,8 @@ Vector3 Enemy::GetWorldPosition() {
 	return worldPos;
 }
 
-AABB Enemy::GetAABB() {
-
-	Vector3 worldPos = GetWorldPosition();
-
-	AABB aabb;
-
-	aabb.min = {worldPos.x - kWidth / 2.0f, worldPos.y - kHeight / 2.0f, worldPos.z - kWidth / 2.0f};
-	aabb.max = {worldPos.x + kWidth / 2.0f, worldPos.y + kHeight / 2.0f, worldPos.z + kWidth / 2.0f};
-
-	return aabb;
-}
-
-void Enemy::OnCollision(const Player* player) { 
+// 02_10 スライド20枚目
+void Enemy::OnCollision(const Player* player) {
 	(void)player;
-};
+	//
+}

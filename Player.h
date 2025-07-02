@@ -1,9 +1,12 @@
 #pragma once
 #include "KamataEngine.h"
 #include "Math.h"
+
 using namespace KamataEngine;
 
 class MapChipField;
+
+// 02_10 21枚目
 class Enemy;
 
 class Player {
@@ -35,11 +38,13 @@ public:
 	// 02_07 スライド4枚目
 	void SetMapChipField(MapChipField* mapChipField) { mapChipField_ = mapChipField; }
 
-	//ワールド座標を取得
+	// 02_10 10枚目 ワールド座標を取得
 	Vector3 GetWorldPosition();
 
+	// 02_10 13枚目
 	AABB GetAABB();
 
+	// 02_10 21枚目 衝突応答
 	void OnCollision(const Enemy* enemy);
 
 private:
@@ -100,13 +105,16 @@ private:
 	// 02_07 スライド17枚目
 	Vector3 CornerPosition(const Vector3& center, Corner corner);
 
+	// 02_08スライド14枚目 設置状態の切り替え処理
 	void UpdateOnGround(const CollisionMapInfo& info);
 
+	// 02_08 スライド27枚目 壁接触している場合の処理
 	void UpdateOnWall(const CollisionMapInfo& info);
 
+	// 02_08スライド16枚目 着地時の速度減衰率
 	static inline const float kAttenuationLanding = 0.0f;
-
+	// 02_08スライド21枚目 微小な数値
 	static inline const float kGroundSearchHeight = 0.06f;
-
+	// 02_08スライド27枚目 着地時の速度減衰率
 	static inline const float kAttenuationWall = 0.2f;
 };

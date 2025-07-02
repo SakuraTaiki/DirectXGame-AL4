@@ -101,3 +101,4 @@ MapChipField::Rect MapChipField::GetRectByIndex(uint32_t xIndex, uint32_t yIndex
 
 	return rect;
 }
+// eof

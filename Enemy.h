@@ -1,11 +1,16 @@
 #pragma once
+
 #include "KamataEngine.h"
 #include "Math.h"
+
 using namespace KamataEngine;
 
+// 02_10 20枚目
 class Player;
 
+// 02_09 スライド4枚目
 class Enemy {
+
 public:
 	// 02_09 スライド5枚目
 	void Initialize(Model* model, Camera* camera, const Vector3& position);
@@ -13,12 +18,12 @@ public:
 	void Update();
 	// 02_09 スライド5枚目
 	void Draw();
+	// 02_10 スライド14枚目
 	AABB GetAABB();
+	// 02_10 スライド14枚目 ワールド座標を取得
 	Vector3 GetWorldPosition();
-	//衝突応答
+	// 02_10 スライド20枚目 衝突応答
 	void OnCollision(const Player* player);
-
-	
 
 private:
 	// 02_09 6枚目 ザ・ワールド
@@ -28,21 +33,20 @@ private:
 	// 02_09 6枚目 カメラ
 	Camera* camera_ = nullptr;
 
-	//敵の歩行の速さ
+	// 02_09 15枚目
 	static inline const float kWalkSpeed = 0.02f;
-	//速度
+	// 02_09 15枚目
 	Vector3 velocity_ = {};
 
-	//最初の角度
-	static inline const float kWallMotionAngleStart = -10.0f;
-
-	//最後の角度
-	static inline const float kWallMotionAngleEnd = 40.0f;
-
-	//アニメーション周期
+	// 02_09 19枚目
+	static inline const float kWalkMotionAngleStart = 0.0f;
+	// 02_09 19枚目
+	static inline const float kWalkMotionAngleEnd = 30.0f;
+	// 02_09 19枚目
 	static inline const float kWalkMotionTime = 1.0f;
+	// 02_09 20枚目
+	float walkTimer = 0.0f;
 
-	float walkTimer_ = 0.0f;
 	// 02_10 14枚目 当たり判定サイズ
 	static inline const float kWidth = 0.8f;
 	static inline const float kHeight = 0.8f;

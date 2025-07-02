@@ -19,26 +19,26 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	gameScene->Initialize();
 
 	ImGuiManager* imguiManager = ImGuiManager::GetInstance();
-	//メインループ
+	// メインループ
 	while (true) {
 		// エンジンの更新
 		if (KamataEngine::Update()) {
 			break;
 		}
-		//imGui受付開始
+		// imGui受付開始
 		imguiManager->Begin();
-		//ゲームシーンの更新
+		// ゲームシーンの更新
 		gameScene->Update();
-		//imGui受付終了
+		// imGui受付終了
 		imguiManager->End();
 		// 描画開始
 		dxCommon->PreDraw();
 
 		// ゲームシーンの描画
 		gameScene->Draw();
-		//軸表示の描画
+		// 軸表示の描画
 		AxisIndicator::GetInstance()->Draw();
-		//imGui描画
+		// imGui描画
 		imguiManager->Draw();
 
 		// 描画終了
