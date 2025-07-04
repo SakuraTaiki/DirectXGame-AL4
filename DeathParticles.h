@@ -13,6 +13,8 @@ public:
 	void Update();
 	void Draw();
 
+	bool IsFinished() { return isFinished_; }
+
 private:
 	// 02_11_10枚目パーティクルの個数
 	static inline const uint32_t kNumParticles = 8;

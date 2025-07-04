@@ -47,6 +47,8 @@ public:
 	// 02_10 21枚目 衝突応答
 	void OnCollision(const Enemy* enemy);
 
+	bool IsDead() const { return isDead_; }
+
 private:
 	// ワールド変換データ
 	WorldTransform worldTransform_;
@@ -117,4 +119,8 @@ private:
 	static inline const float kGroundSearchHeight = 0.06f;
 	// 02_08スライド27枚目 着地時の速度減衰率
 	static inline const float kAttenuationWall = 0.2f;
+
+	bool isDead_ = false;
+
+	
 };

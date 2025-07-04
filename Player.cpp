@@ -475,6 +475,10 @@ AABB Player::GetAABB() {
 // 02_10 21枚目
 void Player::OnCollision(const Enemy* enemy) {
 	(void)enemy;
-	// ジャンプ初速
-	velocity_ += Vector3(0, kJumpAcceleration / 60.0f, 0);
+
+	// 02_12 12枚目 書き換え
+	isDead_ = true;
+
+	//// ジャンプ初速
+	//velocity_ += Vector3(0, kJumpAcceleration / 60.0f, 0);
 }

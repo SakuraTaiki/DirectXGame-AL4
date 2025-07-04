@@ -110,9 +110,11 @@ void GameScene::Initialize() {
 	// 02_11_16枚目 モデル読み込み
 	deathParticle_model_ = Model::CreateFromOBJ("deathParticle");
 
-	// 02_11_16枚目 仮の生成処理 後で消す
-	deathParticles_ = new DeathParticles;
-	deathParticles_->Initialize(deathParticle_model_, &camera_, playerPosition);
+	//// 02_11_16枚目 仮の生成処理 後で消す
+	//deathParticles_ = new DeathParticles;
+	//deathParticles_->Initialize(deathParticle_model_, &camera_, playerPosition);
+
+	phase_ = Phase::kPlay;
 }
 
 void GameScene::GenerateBlocks() {
@@ -140,18 +142,55 @@ void GameScene::GenerateBlocks() {
 	}
 }
 
+void GameScene::changePhase() {
+
+	switch (phase_) {
+	case Phase::kPlay:
+
+		if (player_->IsDead()) {
+			phase_ = Phase::kDeath;
+
+			const Vector3& deathParticlesPosition = player_->GetWorldPosition();
+
+			deathParticles_ = new DeathParticles;
+			deathParticles_->Initialize(deathParticle_model_, &camera_, deathParticlesPosition);
+		}
+		break;
+	case Phase::kDeath:
+	break;
+	}
+}
+
+
 // ゲームシーン更新
 void GameScene::Update() {
 
+	changePhase();
+
+	switch (phase_) {
+	case Phase::kPlay:
+		//ゲームプレイフェーズの処理
+	break;
+	case Phase::kDeath:
+
+		if (deathParticles_ && deathParticles_->IsFinished()) {
+			finished_ = true;
+		}
+
+		break;
+	}
+
 	player_->Update();
 	skydome_->Update();
-	CController_->Update();
+	
 
 	// 02_09 12枚目 敵更新 → 02_10 7枚目で更新
 	//	enemy_->Update();
 	for (Enemy* enemy : enemies_) {
 		enemy->Update();
 	}
+
+	CController_->Update();
 
 #ifdef _DEBUG
 	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
@@ -194,6 +233,9 @@ void GameScene::Update() {
 	if (deathParticles_) {
 		deathParticles_->Update();
 	}
+
+	
+
 }
 
 void GameScene::Draw() {
@@ -205,7 +247,9 @@ void GameScene::Draw() {
 	Model::PreDraw(dxCommon->GetCommandList());
 
 	// 自キャラの描画
-	player_->Draw();
+	if (!player_->IsDead()) {
+		player_->Draw();
+	}
 
 	// 天球描画
 	skydome_->Draw();
@@ -267,3 +311,4 @@ void GameScene::CheckAllCollisions() {
 	}
 #pragma endregion
 }
+

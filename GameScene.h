@@ -26,7 +26,20 @@ public:
 	// 02_10 16枚目 衝突判定と応答
 	void CheckAllCollisions();
 
+	bool IsFinished() const { return finished_; }
+
 private:
+
+	enum class Phase {
+		kPlay,
+		kDeath,
+	};
+
+	Phase phase_;
+
+	void changePhase();
+
+
 	// テクスチャハンドル
 	uint32_t textureHandle_ = 0;
 	// スプライト
@@ -81,4 +94,6 @@ private:
 
 	// 02_11 16枚目
 	Model* deathParticle_model_ = nullptr;
+
+	bool finished_ = false;
 };
