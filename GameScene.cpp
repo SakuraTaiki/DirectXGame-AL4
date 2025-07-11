@@ -110,11 +110,37 @@ void GameScene::Initialize() {
 	// 02_11_16枚目 モデル読み込み
 	deathParticle_model_ = Model::CreateFromOBJ("deathParticle");
 
-	//// 02_11_16枚目 仮の生成処理 後で消す
-	//deathParticles_ = new DeathParticles;
-	//deathParticles_->Initialize(deathParticle_model_, &camera_, playerPosition);
+	
+	// ↑を02_13_27枚目で変更
+	phase_ = Phase::kFadeIn;
 
-	phase_ = Phase::kPlay;
+	// 02_13 27枚目
+	fade_ = new Fade();
+	fade_->Initialize();
+	fade_->Start(Fade::Status::FadeIn, 1.0f);
+}
+
+// 02_12 10枚目 GameScene::Update関数で呼び出しておく
+// player->draw();をif(!player_->IsDead()){}で囲む
+void GameScene::changePhase() {
+
+	switch (phase_) {
+	case Phase::kPlay:
+		// 02_12 13枚目 if文から中身まで全部実装
+		// Initialize関数のいきなりパーティクル発生処理は消す
+		if (player_->IsDead()) {
+			// 死亡演出
+			phase_ = Phase::kDeath;
+
+			const Vector3& deathParticlesPosition = player_->GetWorldPosition();
+
+			deathParticles_ = new DeathParticles;
+			deathParticles_->Initialize(deathParticle_model_, &camera_, deathParticlesPosition);
+		}
+		break;
+	case Phase::kDeath:
+		break;
+	}
 }
 
 void GameScene::GenerateBlocks() {
@@ -142,100 +168,150 @@ void GameScene::GenerateBlocks() {
 	}
 }
 
-void GameScene::changePhase() {
-
-	switch (phase_) {
-	case Phase::kPlay:
-
-		if (player_->IsDead()) {
-			phase_ = Phase::kDeath;
-
-			const Vector3& deathParticlesPosition = player_->GetWorldPosition();
-
-			deathParticles_ = new DeathParticles;
-			deathParticles_->Initialize(deathParticle_model_, &camera_, deathParticlesPosition);
-		}
-		break;
-	case Phase::kDeath:
-	break;
-	}
-}
-
-
 // ゲームシーン更新
 void GameScene::Update() {
 
 	changePhase();
 
 	switch (phase_) {
-	case Phase::kPlay:
-		//ゲームプレイフェーズの処理
-	break;
-	case Phase::kDeath:
+	case Phase::kFadeIn:
+		fade_->Update();
+		if (fade_->IsFinished()) {
+			fade_->Start(Fade::Status::FadeOut, 1.0f);
+			phase_ = Phase::kPlay;
+		}
 
+		skydome_->Update();
+		CController_->Update();
+		//		worldTransformSkydome_.UpdateMatrix();
+		//		cameraController->Update();
+
+		// 自キャラの更新
+		player_->Update();
+
+		for (Enemy* enemy : enemies_) {
+			enemy->Update();
+		}
+
+		// UpdateCamera();
+#ifdef _DEBUG
+		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+			// フラグをトグル
+			isDebugCameraActive_ = !isDebugCameraActive_;
+		}
+#endif
+
+		// カメラの処理
+		if (isDebugCameraActive_) {
+			debugCamera_->Update();
+			camera_.matView = debugCamera_->GetCamera().matView;
+			camera_.matProjection = debugCamera_->GetCamera().matProjection;
+			// ビュープロジェクション行列の転送
+			camera_.TransferMatrix();
+		} else {
+			// ビュープロジェクション行列の更新と転送
+			camera_.UpdateMatrix();
+		}
+
+		// UpdateBlocks();
+		// ブロックの更新
+		for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
+			for (WorldTransform*& worldTransformBlock : worldTransformBlockLine) {
+
+				if (!worldTransformBlock)
+					continue;
+
+				// アフィン変換～DirectXに転送
+				WorldTransformUpdate(*worldTransformBlock);
+			}
+		}
+		break;
+	case Phase::kPlay:
+		skydome_->Update();
+		CController_->Update();
+		//		worldTransformSkydome_.UpdateMatrix();
+		//		cameraController->Update();
+
+		// 自キャラの更新
+		player_->Update();
+
+		for (Enemy* enemy : enemies_) {
+			enemy->Update();
+		}
+
+//		UpdateCamera();
+#ifdef _DEBUG
+		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+			// フラグをトグル
+			isDebugCameraActive_ = !isDebugCameraActive_;
+		}
+#endif
+
+		// カメラの処理
+		if (isDebugCameraActive_) {
+			debugCamera_->Update();
+			camera_.matView = debugCamera_->GetCamera().matView;
+			camera_.matProjection = debugCamera_->GetCamera().matProjection;
+			// ビュープロジェクション行列の転送
+			camera_.TransferMatrix();
+		} else {
+			// ビュープロジェクション行列の更新と転送
+			camera_.UpdateMatrix();
+		}
+
+		//		UpdateBlocks();
+		// ブロックの更新
+		for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
+			for (WorldTransform*& worldTransformBlock : worldTransformBlockLine) {
+
+				if (!worldTransformBlock)
+					continue;
+
+				// アフィン変換～DirectXに転送
+				WorldTransformUpdate(*worldTransformBlock);
+			}
+		}
+
+		CheckAllCollisions();
+		break;
+	case Phase::kDeath:
 		if (deathParticles_ && deathParticles_->IsFinished()) {
+			phase_ = Phase::kFadeOut;
+		}
+
+		skydome_->Update();
+		CController_->Update();
+		//		worldTransformSkydome_.UpdateMatrix();
+		//		UpdateCamera();
+
+		for (Enemy* enemy : enemies_) {
+			enemy->Update();
+		}
+
+		if (deathParticles_) {
+			deathParticles_->Update();
+		}
+
+		break;
+	case Phase::kFadeOut:
+		fade_->Update();
+		if (fade_->IsFinished()) {
 			finished_ = true;
+		}
+
+		skydome_->Update();
+		CController_->Update();
+		//		worldTransformSkydome_.UpdateMatrix();
+		//		UpdateCamera();
+
+		for (Enemy* enemy : enemies_) {
+			enemy->Update();
 		}
 
 		break;
 	}
 
-	player_->Update();
-	skydome_->Update();
 	
-
-	// 02_09 12枚目 敵更新 → 02_10 7枚目で更新
-	//	enemy_->Update();
-	for (Enemy* enemy : enemies_) {
-		enemy->Update();
-	}
-
-	CController_->Update();
-
-#ifdef _DEBUG
-	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
-		// フラグをトグル
-		isDebugCameraActive_ = !isDebugCameraActive_;
-	}
-#endif
-
-	// カメラの処理
-	if (isDebugCameraActive_) {
-		debugCamera_->Update();
-		camera_.matView = debugCamera_->GetCamera().matView;
-		camera_.matProjection = debugCamera_->GetCamera().matProjection;
-		// ビュープロジェクション行列の転送
-		camera_.TransferMatrix();
-	} else {
-		// ビュープロジェクション行列の更新と転送
-		camera_.UpdateMatrix();
-	}
-
-	// ブロックの更新
-	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
-		for (WorldTransform*& worldTransformBlock : worldTransformBlockLine) {
-
-			if (!worldTransformBlock)
-				continue;
-
-			// アフィン変換～DirectXに転送
-			WorldTransformUpdate(*worldTransformBlock);
-		}
-	}
-
-	// デバッグカメラの更新
-	debugCamera_->Update();
-
-	// 02_10 22枚目 衝突判定
-	CheckAllCollisions();
-
-	// 02_11 18枚目 デスパーティクルあれば更新
-	if (deathParticles_) {
-		deathParticles_->Update();
-	}
-
-	
-
 }
 
 void GameScene::Draw() {
@@ -247,9 +323,8 @@ void GameScene::Draw() {
 	Model::PreDraw(dxCommon->GetCommandList());
 
 	// 自キャラの描画
-	if (!player_->IsDead()) {
+	if (!player_->IsDead())
 		player_->Draw();
-	}
 
 	// 天球描画
 	skydome_->Draw();
@@ -282,6 +357,9 @@ void GameScene::Draw() {
 
 	// スプライト描画後処理
 	Sprite::PostDraw();
+
+	// 02_13 28枚目
+	fade_->Draw();
 }
 
 // 02_10 16枚目
@@ -311,4 +389,3 @@ void GameScene::CheckAllCollisions() {
 	}
 #pragma endregion
 }
-

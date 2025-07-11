@@ -5,6 +5,8 @@
 TitleScene::~TitleScene() {
 	delete modelPlayer_;
 	delete modelTitle_;
+
+	delete fade_;
 }
 
 void TitleScene::Initialize() {
@@ -14,6 +16,13 @@ void TitleScene::Initialize() {
 
 	// カメラ初期化
 	camera_.Initialize();
+
+	fade_ = new Fade();
+
+	fade_->Initialize();
+
+		// 02_13 22枚目
+	fade_->Start(Fade::Status::FadeIn, 1.0f);
 
 	const float kPlayerTitle = 2.0f;
 
@@ -36,9 +45,31 @@ void TitleScene::Initialize() {
 
 void TitleScene::Update() {
 
-	// 02_12 27枚目
-	if (Input::GetInstance()->PushKey(DIK_SPACE)) {
-		finished_ = true;
+	//// 02_12 27枚目
+	//if (Input::GetInstance()->PushKey(DIK_SPACE)) {
+	//	finished_ = true;
+	//}
+
+		switch (phase_) {
+	case Phase::kFadeIn:
+		fade_->Update();
+
+		if (fade_->IsFinished()) {
+			phase_ = Phase::kMain;
+		}
+		break;
+	case Phase::kMain:
+		if (Input::GetInstance()->PushKey(DIK_SPACE)) {
+			fade_->Start(Fade::Status::FadeOut, 1.0f);
+			phase_ = Phase::kFadeOut;
+		}
+		break;
+	case Phase::kFadeOut:
+		fade_->Update();
+		if (fade_->IsFinished()) {
+			finished_ = true;
+		}
+		break;
 	}
 
 	counter_ += 1.0f / 60.0f;
@@ -55,6 +86,9 @@ void TitleScene::Update() {
 
 	// アフィン変換～DirectXに転送（プレイヤー座標）
 	WorldTransformUpdate(worldTransformPlayer_);
+
+	fade_->Update();
+
 }
 
 void TitleScene::Draw() {
@@ -67,6 +101,6 @@ void TitleScene::Draw() {
 
 	modelTitle_->Draw(worldTransformTitle_, camera_);
 	modelPlayer_->Draw(worldTransformPlayer_, camera_);
-
+	fade_->Draw();
 	Model::PostDraw();
 }

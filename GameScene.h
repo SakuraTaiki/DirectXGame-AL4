@@ -6,6 +6,7 @@
 #include "MapChipField.h"
 #include "Player.h"
 #include "skydome.h"
+#include "Fade.h"
 #include <vector>
 
 // ゲームシーンクラス
@@ -31,8 +32,10 @@ public:
 private:
 
 	enum class Phase {
+		kFadeIn, // フェードイン 02_13 28枚目で追加
 		kPlay,
 		kDeath,
+		kFadeOut, // フェードアウト 02_13 28枚目で追加
 	};
 
 	Phase phase_;
@@ -96,4 +99,8 @@ private:
 	Model* deathParticle_model_ = nullptr;
 
 	bool finished_ = false;
+
+	// 02_13 28枚目
+	Fade* fade_ = nullptr;
+
 };
