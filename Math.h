@@ -36,6 +36,11 @@ struct AABB {
 	Vector3 max;
 };
 
+// 02_14 29枚目 単項演算子オーバーロード
+Vector3 operator+(const Vector3& v);
+Vector3 operator-(const Vector3& v);
+
+
 // 02_06のCameraControllerのUpdate/Reset関数で必要
 const Vector3 operator+(const Vector3& lhv, const Vector3& rhv);
 
@@ -76,6 +81,10 @@ void WorldTransformUpdate(WorldTransform& worldTransform);
 float Lerp(float x1, float x2, float t);
 
 float EaseInOut(float x1, float x2, float t);
+
+float EaseIn(float x1, float x2, float t);
+
+float EaseOut(float x1, float x2, float t);
 
 bool IsCollision(const AABB& aabb1, const AABB& aabb2);
 

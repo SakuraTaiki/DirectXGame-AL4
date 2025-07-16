@@ -17,6 +17,19 @@ public:
 		kLeft,
 	};
 
+	enum class Behavior {
+		kRoot,
+		kAttack,
+		kUnknown=-1,
+	};
+
+	enum AttackPhase { 
+		kUnknown = -1,
+		kAnticpation,
+		kAction,
+		kRecovery,
+	};
+
 	// 角 02_07スライド16枚目
 	enum Corner { kRightBottom, kLeftBottom, kRightTop, kLeftTop, kNumCorner };
 
@@ -48,6 +61,15 @@ public:
 	void OnCollision(const Enemy* enemy);
 
 	bool IsDead() const { return isDead_; }
+
+	void BehaviorRootUpdate();
+
+	void behaviorAttackUpdate();
+
+	//通常行動初期化
+	void BehaviorRootInitialize();
+
+	void BehaviorAttackInitialize();
 
 private:
 	// ワールド変換データ
@@ -122,5 +144,21 @@ private:
 
 	bool isDead_ = false;
 
-	
+	//ふるまい
+	Behavior behavior_ = Behavior::kRoot;
+
+	Behavior behaviorRequest_ = Behavior::kUnknown;
+
+	uint32_t attackParameter_ = 0;
+
+	AttackPhase attackPhase_ = AttackPhase::kUnknown;
+
+	static inline const uint32_t kAnticipationTime = 8;
+
+	static inline const uint32_t kActionTime = 5;
+
+	static inline const uint32_t kRecoveryTime = 12;
+
+	WorldTransform worldTransformAttack_;
+
 };
