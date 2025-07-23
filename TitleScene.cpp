@@ -21,7 +21,7 @@ void TitleScene::Initialize() {
 
 	fade_->Initialize();
 
-		// 02_13 22枚目
+	// 02_13 22枚目
 	fade_->Start(Fade::Status::FadeIn, 1.0f);
 
 	const float kPlayerTitle = 2.0f;
@@ -46,11 +46,11 @@ void TitleScene::Initialize() {
 void TitleScene::Update() {
 
 	//// 02_12 27枚目
-	//if (Input::GetInstance()->PushKey(DIK_SPACE)) {
+	// if (Input::GetInstance()->PushKey(DIK_SPACE)) {
 	//	finished_ = true;
-	//}
+	// }
 
-		switch (phase_) {
+	switch (phase_) {
 	case Phase::kFadeIn:
 		fade_->Update();
 
@@ -88,7 +88,6 @@ void TitleScene::Update() {
 	WorldTransformUpdate(worldTransformPlayer_);
 
 	fade_->Update();
-
 }
 
 void TitleScene::Draw() {

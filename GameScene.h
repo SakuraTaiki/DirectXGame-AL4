@@ -2,11 +2,11 @@
 #include "CameraController.h"
 #include "DeathParticles.h"
 #include "Enemy.h"
+#include "Fade.h"
 #include "KamataEngine.h"
 #include "MapChipField.h"
 #include "Player.h"
 #include "skydome.h"
-#include "Fade.h"
 #include <vector>
 
 // ゲームシーンクラス
@@ -27,21 +27,23 @@ public:
 	// 02_10 16枚目 衝突判定と応答
 	void CheckAllCollisions();
 
+	// 	// 02_12 26枚目	デスフラグのgetter
 	bool IsFinished() const { return finished_; }
 
 private:
-
+	// 02_12 4枚目 ゲームのフェーズ（型）
 	enum class Phase {
-		kFadeIn, // フェードイン 02_13 28枚目で追加
-		kPlay,
-		kDeath,
+		kFadeIn,  // フェードイン 02_13 28枚目で追加
+		kPlay,    // ゲームプレイ
+		kDeath,   // デス演出
 		kFadeOut, // フェードアウト 02_13 28枚目で追加
 	};
 
+	// 02_12 4枚目 ゲームの現在フェーズ（変数）
 	Phase phase_;
 
-	void changePhase();
-
+	// 02_12 9枚目
+	void ChangePhase();
 
 	// テクスチャハンドル
 	uint32_t textureHandle_ = 0;
@@ -63,6 +65,8 @@ private:
 	Player* player_ = nullptr;
 	// プレイヤーモデル
 	KamataEngine::Model* player_model_ = nullptr;
+
+	Model* attack_model_ = nullptr;
 
 	// ブロックモデル
 	KamataEngine::Model* block_model_ = nullptr;
@@ -98,9 +102,9 @@ private:
 	// 02_11 16枚目
 	Model* deathParticle_model_ = nullptr;
 
+	// 02_12 26枚目
 	bool finished_ = false;
 
 	// 02_13 28枚目
 	Fade* fade_ = nullptr;
-
 };

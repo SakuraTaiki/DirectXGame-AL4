@@ -1,5 +1,5 @@
 #pragma once
-#include"Fade.h"
+#include "Fade.h"
 #include "KamataEngine.h"
 
 using namespace KamataEngine;
@@ -7,7 +7,6 @@ using namespace KamataEngine;
 // 02_12 19枚目 タイトルシーン
 class TitleScene {
 public:
-
 	enum class Phase {
 		kFadeIn,
 		kMain,

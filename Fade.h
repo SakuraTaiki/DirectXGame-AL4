@@ -3,7 +3,6 @@
 using namespace KamataEngine;
 class Fade {
 public:
-
 	enum class Status {
 		None,
 		FadeIn,
@@ -13,12 +12,11 @@ public:
 	void Initialize();
 	void Update();
 	void Draw();
-	
-	 // 02_13 18枚目 フェード開始
-	void Start(Status status, float duration); 
 
-	
-    // 02_13 24枚目 フェード停止
+	// 02_13 18枚目 フェード開始
+	void Start(Status status, float duration);
+
+	// 02_13 24枚目 フェード停止
 	void Stop();
 
 	// 02_13 26枚目 フェード終了判定
