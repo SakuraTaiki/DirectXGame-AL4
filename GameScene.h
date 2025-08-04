@@ -66,8 +66,6 @@ private:
 	// プレイヤーモデル
 	KamataEngine::Model* player_model_ = nullptr;
 
-	Model* attack_model_ = nullptr;
-
 	// ブロックモデル
 	KamataEngine::Model* block_model_ = nullptr;
 	std::vector<std::vector<WorldTransform*>> worldTransformBlocks_;
@@ -107,4 +105,7 @@ private:
 
 	// 02_13 28枚目
 	Fade* fade_ = nullptr;
+
+	// 02_14 34枚目
+	Model* modelAttack_ = nullptr;
 };

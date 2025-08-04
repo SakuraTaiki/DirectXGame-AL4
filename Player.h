@@ -37,7 +37,7 @@ public:
 	};
 
 	/// 初期化
-	void Initialize(Model* model, Model* attackModel, Camera* camera, const Vector3& position);
+	void Initialize(Model* model, Model* modelAttack, Camera* camera, const Vector3& position);
 
 	/// 更新
 	void Update();
@@ -77,6 +77,12 @@ public:
 
 	// 02_14 16枚目 攻撃行動初期化
 	void BehaviorAttackInitialize();
+
+	// 02_15 14枚目
+	bool IsAttack() const { return behavior_ == Behavior::kAttack && attackPhase_ == AttackPhase::kAction; }
+
+	// 02_15
+	bool IsCollisionDisabled() const { return isCollisionDisabled_; }
 
 private:
 	// ワールド変換データ
@@ -169,8 +175,10 @@ private:
 	static inline const uint32_t kActionTime = 5;
 	// 02_14 26枚目 余韻動作の時間
 	static inline const uint32_t kRecoveryTime = 12;
+	// 02_14 34枚目 攻撃エフェクト
+	Model* modelAttack_ = nullptr;
 	WorldTransform worldTransformAttack_;
 
-	KamataEngine::Model* modelAttack_ = nullptr;
-	
+	// 02_15 20枚目
+	bool isCollisionDisabled_ = false; // 衝突無効化
 };

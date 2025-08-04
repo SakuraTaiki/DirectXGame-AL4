@@ -1,5 +1,7 @@
 #include "Enemy.h"
+#include "GameScene.h"
 #include "Math.h"
+#include "Player.h"
 #include <cassert>
 #include <numbers>
 
@@ -28,17 +30,54 @@ void Enemy::Initialize(Model* model, Camera* camera, const Vector3& position) {
 // 02_09 スライド5枚目
 void Enemy::Update() {
 
-	// 02_09 16枚目 移動
-	worldTransform_.translation_ += velocity_;
+	// 変更リクエストがあったら
+	if (behaviorRequest_ != Behavior::kUnknown) {
+		// 振るまいを変更する
+		behavior_ = behaviorRequest_;
 
-	// 02_09 20枚目
-	walkTimer += 1.0f / 60.0f;
+		// 各振るまいごとの初期化を実行
+		switch (behavior_) {
+		case Behavior::kDefeated:
+		default:
+			counter_ = 0;
+			break;
+		}
 
-	// 02_09 23枚目 回転アニメーション
-	worldTransform_.rotation_.x = std::sin(std::numbers::pi_v<float> * 2.0f * walkTimer / kWalkMotionTime);
+		// 振るまいリクエストをリセット
+		behaviorRequest_ = Behavior::kUnknown;
+	}
 
-	// 02_09 スライド8枚目 ワールド行列更新
-	WorldTransformUpdate(worldTransform_);
+	// 02_15 13枚目
+	switch (behavior_) {
+	// 歩行
+	case Behavior::kWalk:
+		// 02_09 16枚目 移動
+		worldTransform_.translation_ += velocity_;
+
+		// 02_09 20枚目
+		walkTimer += 1.0f / 60.0f;
+
+		// 02_09 23枚目 回転アニメーション
+		worldTransform_.rotation_.x = std::sin(std::numbers::pi_v<float> * 2.0f * walkTimer / kWalkMotionTime);
+
+		// 02_09 スライド8枚目 ワールド行列更新
+		WorldTransformUpdate(worldTransform_);
+		break;
+	// やられ
+	case Behavior::kDefeated:
+		// 02_15 15枚目
+		counter_ += 1.0f / 60.0f;
+
+		worldTransform_.rotation_.y += 0.3f;
+		worldTransform_.rotation_.x = EaseOut(ToRadians(kDefeatedMotionAngleStart), ToRadians(kDefeatedMotionAngleEnd), counter_ / kDefeatedTime);
+
+		WorldTransformUpdate(worldTransform_);
+
+		if (counter_ >= kDefeatedTime) {
+			isDead_ = true;
+		}
+		break;
+	}
 }
 
 // 02_09 スライド5枚目
@@ -76,6 +115,22 @@ Vector3 Enemy::GetWorldPosition() {
 
 // 02_10 スライド20枚目
 void Enemy::OnCollision(const Player* player) {
-	(void)player;
-	//
+
+	// 02_15 6枚目 → 14枚目で削除
+	//	isDead_ = true;
+
+	if (behavior_ == Behavior::kDefeated) {
+		// 敵がやられているなら何もしない
+		return;
+	}
+
+	// プレイヤーが攻撃中なら敵が死ぬ
+	// player.hをインクルード
+	if (player->IsAttack()) {
+		// 敵の振るまいをやられに変更
+		behaviorRequest_ = Behavior::kDefeated;
+
+		// 02_15 20枚目 衝突を無効化
+		isCollisionDisabled_ = true;
+	}
 }

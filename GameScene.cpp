@@ -72,13 +72,14 @@ void GameScene::Initialize() {
 	// プレイヤーモデル
 	player_model_ = Model::CreateFromOBJ("player");
 	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(2, 18);
-
-	attack_model_ = Model::CreateFromOBJ("attack_effect");
+	// 02_14 34枚目 プレイヤー攻撃エフェクトモデル
+	modelAttack_ = Model::CreateFromOBJ("attack_effect");
 
 	// 02_07 スライド5枚目
 	player_->SetMapChipField(mapChipField_);
 
-	player_->Initialize(player_model_,attack_model_, &camera_, playerPosition);
+	// 02_14 34枚目でプレイヤー攻撃エフェクト引数追加
+	player_->Initialize(player_model_, modelAttack_, &camera_, playerPosition);
 
 	// 02_06カメラコントローラ スライド13枚目
 	CController_ = new CameraController(); // 生成
@@ -180,6 +181,15 @@ void GameScene::GenerateBlocks() {
 // ゲームシーン更新
 void GameScene::Update() {
 
+	// 02_15 7枚目 デスフラグの立った敵を削除
+	enemies_.remove_if([](Enemy* enemy) {
+		if (enemy->IsDead()) {
+			delete enemy;
+			return true;
+		}
+		return false;
+	});
+
 	ChangePhase();
 
 	switch (phase_) {
@@ -244,9 +254,9 @@ void GameScene::Update() {
 		// 自キャラの更新
 		player_->Update();
 
-		//		for (Enemy *enemy : enemies_) {
-		//			enemy->Update();
-		//		}
+		for (Enemy* enemy : enemies_) {
+			enemy->Update();
+		}
 
 		//		UpdateCamera();
 		/*
@@ -454,6 +464,11 @@ void GameScene::CheckAllCollisions() {
 
 		// 自キャラと敵弾全ての当たり判定
 		for (Enemy* enemy : enemies_) {
+
+			// コリジョン無効の敵はスキップ
+			if (enemy->IsCollisionDisabled())
+				continue;
+
 			// 敵弾の座標
 			aabb2 = enemy->GetAABB();
 

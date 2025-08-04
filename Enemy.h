@@ -12,6 +12,13 @@ class Player;
 class Enemy {
 
 public:
+	// 02_15 13枚目 振るまい
+	enum class Behavior {
+		kUnknown = -1, // 無効な状態
+		kWalk,         // 歩行状態
+		kDefeated,     // やられ状態
+	};
+
 	// 02_09 スライド5枚目
 	void Initialize(Model* model, Camera* camera, const Vector3& position);
 	// 02_09 スライド5枚目
@@ -24,6 +31,10 @@ public:
 	Vector3 GetWorldPosition();
 	// 02_10 スライド20枚目 衝突応答
 	void OnCollision(const Player* player);
+	// 02_15 6枚目
+	bool IsDead() const { return isDead_; }
+	// 02_15 20枚目
+	bool IsCollisionDisabled() const { return isCollisionDisabled_; }
 
 private:
 	// 02_09 6枚目 ザ・ワールド
@@ -50,4 +61,20 @@ private:
 	// 02_10 14枚目 当たり判定サイズ
 	static inline const float kWidth = 0.8f;
 	static inline const float kHeight = 0.8f;
+
+	// 02_15 6枚目
+	bool isDead_ = false;
+
+	// 02_15 13枚目
+	Behavior behavior_ = Behavior::kWalk;
+	Behavior behaviorRequest_ = Behavior::kUnknown;
+
+	// 02_15 15枚目
+	static inline const float kDefeatedTime = 0.6f;
+	static inline const float kDefeatedMotionAngleStart = 0.0f;
+	static inline const float kDefeatedMotionAngleEnd = -60.0f;
+	float counter_ = 0.0f; // カウンター
+
+	// 02_15 20枚目
+	bool isCollisionDisabled_ = false;
 };
