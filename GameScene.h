@@ -23,6 +23,8 @@ public:
 	// 描画
 	void Draw();
 
+	bool AreAllEnemiesDefeated() const;
+		
 	void GenerateBlocks();
 
 	// 02_10 16枚目 衝突判定と応答
@@ -30,6 +32,9 @@ public:
 
 	// 	// 02_12 26枚目	デスフラグのgetter
 	bool IsFinished() const { return finished_; }
+
+	 Player* GetPlayer() const { return player_; }
+	
 
 	// エフェクトを生成
 	void CreateEffect(const Vector3& position);
@@ -89,8 +94,7 @@ private:
 	// 02_06カメラ移動
 	CameraController* CController_ = nullptr;
 
-	// 02_09 10枚目 エネミークラス
-	// Enemy* enemy_ = nullptr;//02_10で削除
+	
 
 	// 02_09 10枚目 エネミーモデル
 	KamataEngine::Model* enemy_model_ = nullptr;
@@ -118,4 +122,6 @@ private:
 
 	// 02_16
 	Model* particle_model_ = nullptr;
+
+	
 };

@@ -40,6 +40,8 @@ public:
 	// 02_16 19
 	void SetGameScene(GameScene* gameScene) { gameScene_ = gameScene; }
 
+
+
 private:
 	// 02_09 6枚目 ザ・ワールド
 	WorldTransform worldTransform_;

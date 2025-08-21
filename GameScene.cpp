@@ -381,6 +381,8 @@ void GameScene::Update() {
 		break;
 	}
 
+
+	
 	/*
 	    // 02_12 5枚目 まず追加
 	    // → 02_13 28枚目で中身まるごと変更
@@ -536,4 +538,11 @@ void GameScene::CheckAllCollisions() {
 		}
 	}
 #pragma endregion
+}
+bool GameScene::AreAllEnemiesDefeated() const {
+	for (const Enemy* enemy : enemies_) {
+		if (!enemy->IsDead())
+			return false;
+	}
+	return true;
 }

@@ -1,6 +1,10 @@
 #include "GameScene.h"
+#include"Player.h"
+#include"Enemy.h"
 #include "KamataEngine.h"
 #include "TitleScene.h"
+#include"GameClear.h"
+#include"GameOver.h"
 #include <Windows.h>
 
 using namespace KamataEngine;
@@ -9,11 +13,17 @@ using namespace KamataEngine;
 // ゲームシーンのインスタンス生成
 GameScene* gameScene = nullptr;
 TitleScene* titleScene = nullptr;
+GameClear* gameClearScene = nullptr;
+GameOver* gameOverScene = nullptr;
+Enemy* enemy = nullptr;
+Player* player = nullptr;
 
 enum class Scene {
 	kUnknown = 0,
 	kTitle,
 	kGame,
+	kClear,
+	kOver,
 };
 
 Scene scene = Scene::kUnknown;
@@ -29,15 +39,43 @@ void ChangeScene() {
 			titleScene = nullptr;
 			gameScene = new GameScene;
 			gameScene->Initialize();
+
+
 		}
 		break;
 	case Scene::kGame:
 		// 02_12 30枚目
-		if (gameScene->IsFinished()) {
+	
 			// シーン変更
+			if (gameScene->GetPlayer()->IsDead()) {
+				scene = Scene::kOver;
+				delete gameScene;
+				gameScene = nullptr;
+				gameOverScene = new GameOver;
+				gameOverScene->Initialize();
+			} else if (gameScene->AreAllEnemiesDefeated()) {
+				scene = Scene::kClear;
+				delete gameScene;
+				gameScene = nullptr;
+				gameClearScene = new GameClear;
+				gameClearScene->Initialize();
+			
+		}
+		break;
+	case Scene::kClear:
+		if (gameClearScene->IsFinished()) {
 			scene = Scene::kTitle;
-			delete gameScene;
-			gameScene = nullptr;
+			delete gameClearScene;
+			gameClearScene = nullptr;
+			titleScene = new TitleScene;
+			titleScene->Initialize();
+		}
+		break;
+	case Scene::kOver:
+		if (gameOverScene->IsFinished()) {
+			scene = Scene::kTitle;
+			delete gameOverScene;
+			gameOverScene = nullptr;
 			titleScene = new TitleScene;
 			titleScene->Initialize();
 		}
@@ -54,6 +92,12 @@ void UpdateScene() {
 	case Scene::kGame:
 		gameScene->Update();
 		break;
+	case Scene::kClear:
+		gameClearScene->Update();
+		break;
+	case Scene::kOver:
+		gameOverScene->Update();
+		break;
 	}
 }
 
@@ -64,6 +108,12 @@ void DrawScene() {
 		break;
 	case Scene::kGame:
 		gameScene->Draw();
+		break;
+	case Scene::kClear: 
+		gameClearScene->Draw(); 
+		break;
+    case Scene::kOver: 
+		gameOverScene->Draw();
 		break;
 	}
 }
@@ -92,11 +142,13 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		// imGui受付開始
 		imguiManager->Begin();
 
+		UpdateScene(); // 02_12 33枚目で追加
+
+
 		// シーン切り替え
 		ChangeScene(); // 02_12 33枚目で追加
 		// シーン更新
-		UpdateScene(); // 02_12 33枚目で追加
-
+		
 		// imGui受付終了
 		imguiManager->End();
 		// 描画開始
@@ -124,6 +176,13 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	// タイトルの開放
 	delete titleScene;
 
+	delete gameClearScene;
+
+	delete gameOverScene;
+
+	delete enemy;
+
+	delete player;
 	// エンジンの終了処理
 	KamataEngine::Finalize();
 
