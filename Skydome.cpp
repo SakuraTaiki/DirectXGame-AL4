@@ -5,7 +5,7 @@
 /// </summary>
 void Skydome::Initialize(Model* model, Camera* camera) {
 
-	assert(model);
+	
 
 	model_ = model;
 	camera_ = camera;
