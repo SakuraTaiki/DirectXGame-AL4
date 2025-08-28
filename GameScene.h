@@ -13,6 +13,9 @@
 // ゲームシーンクラス
 class GameScene {
 public:
+
+	 bool isPaused_ = false; // ポーズ中かどうか
+
 	~GameScene();
 	// 初期化
 	void Initialize();
@@ -38,6 +41,9 @@ public:
 
 	// エフェクトを生成
 	void CreateEffect(const Vector3& position);
+
+	void TogglePause() { isPaused_ = !isPaused_; }
+	bool IsPaused() const { return isPaused_; }
 
 private:
 	// 02_12 4枚目 ゲームのフェーズ（型）
@@ -122,6 +128,7 @@ private:
 
 	// 02_16
 	Model* particle_model_ = nullptr;
-
+	 
+	
 	
 };

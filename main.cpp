@@ -61,6 +61,20 @@ void ChangeScene() {
 				gameClearScene->Initialize();
 			
 		}
+
+			 // Input クラスで ESC キー押下を判定
+		if (Input::GetInstance()->TriggerKey(DIK_ESCAPE)) {
+			if (scene == Scene::kGame) {
+				scene = Scene::kTitle;
+				delete gameScene;
+				gameScene = nullptr;
+
+				titleScene = new TitleScene;
+				titleScene->Initialize();
+
+				return; // Update終了
+			}
+		}
 		break;
 	case Scene::kClear:
 		if (gameClearScene->IsFinished()) {
