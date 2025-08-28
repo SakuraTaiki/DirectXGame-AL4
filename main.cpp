@@ -6,6 +6,8 @@
 #include"GameClear.h"
 #include"GameOver.h"
 #include <Windows.h>
+#include <mmsystem.h>
+#pragma comment(lib, "winmm.lib")
 
 using namespace KamataEngine;
 // Windowsアプリでのエントリーポイント(main関数)
@@ -26,46 +28,82 @@ enum class Scene {
 	kOver,
 };
 
+//BGM
+//  タイトルBGM
+void PlayTitleBGM() { PlaySound(TEXT("Title.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP); }
+
+
+// ゲームプレイBGM
+void PlayGameBGM() { PlaySound(TEXT("PlayGame.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP); }
+
+// ゲームオーバーBGM
+void PlayGameOverBGM() { PlaySound(TEXT("GameOver.wav"), NULL, SND_FILENAME | SND_ASYNC); }
+
+// クリアBGM
+void PlayClearBGM() { PlaySound(TEXT("GameClear.wav"), NULL, SND_FILENAME | SND_ASYNC); }
+
+// BGMを止める
+void StopBGM() { PlaySound(NULL, 0, 0); }
+
+bool isBGMPlaying = false;
+
 Scene scene = Scene::kUnknown;
 
 void ChangeScene() {
 
 	switch (scene) {
-	case Scene::kTitle:
-		if (titleScene->IsFinished()) {
 
+	case Scene::kTitle:
+		if (!isBGMPlaying) {
+			PlayTitleBGM();
+			isBGMPlaying = true;
+		}
+		if (titleScene->IsFinished()) {
+			StopBGM();
+			isBGMPlaying = false;
 			scene = Scene::kGame;
 			delete titleScene;
 			titleScene = nullptr;
 			gameScene = new GameScene;
 			gameScene->Initialize();
-
-
 		}
 		break;
+
 	case Scene::kGame:
-		// 02_12 30枚目
-	
-			// シーン変更
-			if (gameScene->GetPlayer()->IsDead()) {
-				scene = Scene::kOver;
-				delete gameScene;
-				gameScene = nullptr;
-				gameOverScene = new GameOver;
-				gameOverScene->Initialize();
-			} else if (gameScene->AreAllEnemiesDefeated()) {
-				scene = Scene::kClear;
-				delete gameScene;
-				gameScene = nullptr;
-				gameClearScene = new GameClear;
-				gameClearScene->Initialize();
-			
+		if (!isBGMPlaying) {
+			PlayGameBGM();
+			isBGMPlaying = true;
+		}
+		if (gameScene->GetPlayer()->IsDead()) {
+			StopBGM();
+			isBGMPlaying = false;
+			scene = Scene::kOver;
+			delete gameScene;
+			gameScene = nullptr;
+			gameOverScene = new GameOver;
+			gameOverScene->Initialize();
+		} else if (gameScene->AreAllEnemiesDefeated()) {
+			StopBGM();
+			isBGMPlaying = false;
+			scene = Scene::kClear;
+			delete gameScene;
+			gameScene = nullptr;
+			gameClearScene = new GameClear;
+			gameClearScene->Initialize();
 		}
 
 			 // Input クラスで ESC キー押下を判定
 		if (Input::GetInstance()->TriggerKey(DIK_ESCAPE)) {
+			StopBGM();
+			isBGMPlaying = false;
+
 			if (scene == Scene::kGame) {
 				scene = Scene::kTitle;
+				if (!isBGMPlaying) {
+					PlayTitleBGM();
+					isBGMPlaying = true;
+				}
+				
 				delete gameScene;
 				gameScene = nullptr;
 
@@ -77,7 +115,14 @@ void ChangeScene() {
 		}
 		break;
 	case Scene::kClear:
+
+		if (!isBGMPlaying) {
+			PlayClearBGM();
+			isBGMPlaying = true;
+		}
 		if (gameClearScene->IsFinished()) {
+			StopBGM();
+			isBGMPlaying = false;
 			scene = Scene::kTitle;
 			delete gameClearScene;
 			gameClearScene = nullptr;
@@ -85,14 +130,23 @@ void ChangeScene() {
 			titleScene->Initialize();
 		}
 		break;
+
 	case Scene::kOver:
+
+		 if (!isBGMPlaying) {
+			PlayGameOverBGM();
+			isBGMPlaying = true;
+		}
 		if (gameOverScene->IsFinished()) {
+			StopBGM();
+			isBGMPlaying = false;
 			scene = Scene::kTitle;
 			delete gameOverScene;
 			gameOverScene = nullptr;
 			titleScene = new TitleScene;
 			titleScene->Initialize();
 		}
+
 		break;
 	}
 }
