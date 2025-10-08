@@ -181,4 +181,10 @@ private:
 
 	// 02_15 20枚目
 	bool isCollisionDisabled_ = false; // 衝突無効化
+
+	//2段ジャンプ用　
+
+	int jumpCount_ = 0;//ジャンプ回数
+	int maxJumpCount_ = 2; //最大ジャンプ回数
+
 };

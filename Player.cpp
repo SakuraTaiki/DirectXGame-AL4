@@ -235,17 +235,12 @@ void Player::Initialize(Model* model, Model* modelAttack, Camera* camera, const 
 // 移動入力(02_07 スライド10枚目)
 void Player::InputMove() {
 
+	// ===== 横移動処理（地上限定） =====
 	if (onGround_) {
-
-		// 左右移動操作
 		if (Input::GetInstance()->PushKey(DIK_RIGHT) || Input::GetInstance()->PushKey(DIK_LEFT)) {
-
-			// 左右加速
 			Vector3 acceleration = {};
 			if (Input::GetInstance()->PushKey(DIK_RIGHT)) {
-
 				if (velocity_.x < 0.0f) {
-					// 旋回の最初は移動減衰をかける
 					velocity_.x *= (1.0f - kAttenuation);
 				}
 				acceleration.x += kAcceleration / 60.0f;
@@ -256,7 +251,6 @@ void Player::InputMove() {
 				}
 			} else if (Input::GetInstance()->PushKey(DIK_LEFT)) {
 				if (velocity_.x > 0.0f) {
-					// 旋回の最初は移動減衰をかける
 					velocity_.x *= (1.0f - kAttenuation);
 				}
 				acceleration.x -= kAcceleration / 60.0f;
@@ -269,22 +263,37 @@ void Player::InputMove() {
 			velocity_ += acceleration;
 			velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
 		} else {
-			// 非入力時は移動減衰をかける
 			velocity_.x *= (1.0f - kAttenuation);
 		}
 
-		// ほぼ0の場合に0にする
 		if (std::abs(velocity_.x) <= 0.0001f) {
 			velocity_.x = 0.0f;
 		}
+	}
 
-		if (Input::GetInstance()->PushKey(DIK_UP)) {
-			// ジャンプ初速
-			velocity_ += Vector3(0, kJumpAcceleration / 60.0f, 0);
+	// ===== ジャンプ処理（空中も含む） =====
+
+
+	if (Input::GetInstance()->TriggerKey(DIK_UP)) {
+		printf("jumpCount = %d, onGround = %d\n", jumpCount_, onGround_);
+		if (jumpCount_ < maxJumpCount_) {
+
+			//段階ごとにジャンプの強さを設定
+			float jumpPower = 0.0f;
+			if (jumpCount_ == 0) {
+				jumpPower = kJumpAcceleration / 60.0f;
+			} else if (jumpCount_ ==1) {
+				jumpPower = (kJumpAcceleration / 60.0f) * 0.8f;
+			}
+			velocity_.y = jumpPower;
+			jumpCount_++;
+			onGround_ = false;
 		}
-	} else {
-		// 落下速度
-		velocity_ += Vector3(0, -kGravityAcceleration / 60.0f, 0);
+	}
+
+	// ===== 重力処理 =====
+	if (!onGround_) {
+		velocity_.y += -kGravityAcceleration / 60.0f;
 		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
 	}
 }
@@ -451,6 +460,8 @@ void Player::UpdateOnGround(const CollisionMapInfo& info) {
 			velocity_.x *= (1.0f - kAttenuationLanding);
 			// Y速度をゼロに
 			velocity_.y = 0.0f;
+
+			jumpCount_ = 0;
 		}
 	}
 }
