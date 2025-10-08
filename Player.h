@@ -121,7 +121,7 @@ private:
 	static inline const float kWidth = 0.8f;
 	static inline const float kHeight = 0.8f;
 	// 02_07スライド34枚目
-	static inline const float kBlank = 0.04f;
+	static inline const float kBlank = 0.02f;
 
 	// 02_07スライド10枚目 移動入力
 	void InputMove();
