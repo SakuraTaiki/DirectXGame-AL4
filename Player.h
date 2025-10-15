@@ -187,4 +187,7 @@ private:
 	int jumpCount_ = 0;//ジャンプ回数
 	int maxJumpCount_ = 2; //最大ジャンプ回数
 
+	//壁ジャンプ用　
+	bool onWall_ = false;	//壁に触れているかどうか
+	int wallDirection_ = 0;	//壁の方向
 };
