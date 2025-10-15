@@ -97,9 +97,9 @@ private:
 	// 02_05  フレームごとの加速度
 	static inline const float kAcceleration = 0.1f;
 	// 02_05 非入力時の摩擦係数
-	static inline const float kAttenuation = 0.05f;
+	static inline const float kAttenuation = 0.03f;
 	// 02_05 最高速度
-	static inline const float kLimitRunSpeed = 0.3f;
+	static inline const float kLimitRunSpeed = 0.28f;
 	// 02_05 顔の向き
 	LRDirection lrDirection_ = LRDirection::kRight;
 	// 02_05 旋回開始時の角度
@@ -190,4 +190,8 @@ private:
 	//壁ジャンプ用　
 	bool onWall_ = false;	//壁に触れているかどうか
 	int wallDirection_ = 0;	//壁の方向
+
+	//滑空用の変数
+	bool isGliding_ = false;
+
 };

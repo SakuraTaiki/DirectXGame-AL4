@@ -300,7 +300,7 @@ void Player::InputMove() {
 
 			onWall_ = false;
 			onGround_ = false;
-			jumpCount_ = 1; // 空中ジャンプ1回分を残す
+			jumpCount_ = 2; // 空中ジャンプ1回分を残す
 		}
 
 		else if (jumpCount_ < maxJumpCount_) {
@@ -319,10 +319,37 @@ void Player::InputMove() {
 		}
 	}
 
-	// ===== 重力処理 =====
+	// ===== 重力処理 & 滑空処理 =====
 	if (!onGround_) {
+		if (!isGliding_ && Input::GetInstance()->PushKey(DIK_UP)) {
+		//一定の下降速度に達していたら滑空
+			if (velocity_.y < -0.1f) {
+			isGliding_ = true;
+			}
+		}
+
+		//追加: 滑空解除条件
+		if (isGliding_) {
+		//下キー離して解除
+			if (!Input::GetInstance()->PushKey(DIK_UP)) {
+			isGliding_ = false;
+			}
+		}
+
+		//通常or滑空時の重力処理
+		if (isGliding_) {
+		//滑空中は重力を弱くする
+			velocity_.y += -kGravityAcceleration * 0.2f / 60.0f;
+			//落下速度を制限
+			velocity_.y = std::max(velocity_.y, -0.08f);
+		} else {
+		//通常の落下
 		velocity_.y += -kGravityAcceleration / 60.0f;
 		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
+		}
+	} else {
+	//地上なら滑空フラグをリセット
+		isGliding_ = false;
 	}
 }
 
