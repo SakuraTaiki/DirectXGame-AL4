@@ -235,15 +235,19 @@ void Player::Initialize(Model* model, Model* modelAttack, Camera* camera, const 
 // 移動入力(02_07 スライド10枚目)
 void Player::InputMove() {
 
-	// ===== 横移動処理（地上限定） =====
+	// ===== 横移動処理 =====
 	if (onGround_) {
+		// --- 地上 ---
 		if (Input::GetInstance()->PushKey(DIK_RIGHT) || Input::GetInstance()->PushKey(DIK_LEFT)) {
 			Vector3 acceleration = {};
+
 			if (Input::GetInstance()->PushKey(DIK_RIGHT)) {
+				// 反対方向に慣性が残っていたら即リセット
 				if (velocity_.x < 0.0f) {
-					velocity_.x *= (1.0f - kAttenuation);
+					velocity_.x = 0.0f;
 				}
 				acceleration.x += kAcceleration / 60.0f;
+
 				if (lrDirection_ != LRDirection::kRight) {
 					lrDirection_ = LRDirection::kRight;
 					turnFirstRotationY_ = worldTransform_.rotation_.y;
@@ -251,47 +255,59 @@ void Player::InputMove() {
 				}
 			} else if (Input::GetInstance()->PushKey(DIK_LEFT)) {
 				if (velocity_.x > 0.0f) {
-					velocity_.x *= (1.0f - kAttenuation);
+					velocity_.x = 0.0f;
 				}
 				acceleration.x -= kAcceleration / 60.0f;
+
 				if (lrDirection_ != LRDirection::kLeft) {
 					lrDirection_ = LRDirection::kLeft;
 					turnFirstRotationY_ = worldTransform_.rotation_.y;
 					turnTimer_ = kTimeTurn;
 				}
 			}
+
 			velocity_ += acceleration;
 			velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
 		} else {
-			velocity_.x *= (1.0f - kAttenuation);
-		}
-
-		if (std::abs(velocity_.x) <= 0.0001f) {
+			// 入力がないときは完全停止（滑らせない）
 			velocity_.x = 0.0f;
 		}
+	} else {
+		// --- 空中 ---
+		Vector3 acceleration = {};
+		if (Input::GetInstance()->PushKey(DIK_RIGHT)) {
+			acceleration.x += (kAcceleration * 0.5f) / 60.0f; // 空中では加速を半分に
+			if (lrDirection_ != LRDirection::kRight) {
+				lrDirection_ = LRDirection::kRight;
+			}
+		} else if (Input::GetInstance()->PushKey(DIK_LEFT)) {
+			acceleration.x -= (kAcceleration * 0.5f) / 60.0f;
+			if (lrDirection_ != LRDirection::kLeft) {
+				lrDirection_ = LRDirection::kLeft;
+			}
+		}
+
+		// 空中では摩擦減速で慣性を少し残す
+		velocity_ += acceleration;
+		velocity_.x *= (1.0f - kAttenuation * 0.3f); // 減衰率を少し弱めに
+		velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
 	}
 
-	// ===== ジャンプ処理（空中も含む） =====
+	// 微小速度補正
+	if (std::abs(velocity_.x) <= 0.0001f) {
+		velocity_.x = 0.0f;
+	}
 
+	// ===== ジャンプ処理 =====
 	if (Input::GetInstance()->TriggerKey(DIK_UP)) {
 		if (!onGround_ && onWall_) {
-			// 壁から離れる方向(1:右壁,-1:左壁)
+			// 壁ジャンプ処理
 			float wallDir = (float)wallDirection_;
-			//壁にぶつかった時の横速度を基に反発力を強める
-			//壁に強く突っ込むほど強く跳ねる
-			float apporoachSpeed = std::clamp(std::abs(velocity_.x), 0.0f, 0.3f); //入射スピードの強さを取得
-			float normalizedSpeed = apporoachSpeed / 0.3f;//0~1に正規化
-
-			//跳ね返り角度補正(入射角が急なほど横に浅いほど縦に)
+			float apporoachSpeed = std::clamp(std::abs(velocity_.x), 0.0f, 0.3f);
+			float normalizedSpeed = apporoachSpeed / 0.3f;
 			float angleRatio = 0.5f + 0.5f * normalizedSpeed;
-			//0.5 ほぼ上方向
-			//1.0　横方向に強く跳ねる
-
-			//ベースのジャンプ力
 			float baseJumpX = kJumpAcceleration * 0.012f;
 			float baseJumpY = kJumpAcceleration * 0.018f;
-
-			// 反対方向に飛ぶ ジャンプ方向を補正
 			float jumpPowerX = -wallDir * baseJumpX * (0.5f + normalizedSpeed * 1.5f);
 			float jumpPowerY = baseJumpY * angleRatio;
 
@@ -300,13 +316,8 @@ void Player::InputMove() {
 
 			onWall_ = false;
 			onGround_ = false;
-			jumpCount_ = 2; // 空中ジャンプ1回分を残す
-		}
-
-		else if (jumpCount_ < maxJumpCount_) {
-
-			// 段階ごとにジャンプの強さを設定
-			// 通常ジャンプ
+			jumpCount_ = 2;
+		} else if (jumpCount_ < maxJumpCount_) {
 			float jumpPower = 0.0f;
 			if (jumpCount_ == 0) {
 				jumpPower = kJumpAcceleration / 60.0f;
@@ -322,33 +333,25 @@ void Player::InputMove() {
 	// ===== 重力処理 & 滑空処理 =====
 	if (!onGround_) {
 		if (!isGliding_ && Input::GetInstance()->PushKey(DIK_UP)) {
-		//一定の下降速度に達していたら滑空
 			if (velocity_.y < -0.1f) {
-			isGliding_ = true;
+				isGliding_ = true;
 			}
 		}
 
-		//追加: 滑空解除条件
 		if (isGliding_) {
-		//下キー離して解除
 			if (!Input::GetInstance()->PushKey(DIK_UP)) {
-			isGliding_ = false;
+				isGliding_ = false;
 			}
 		}
 
-		//通常or滑空時の重力処理
 		if (isGliding_) {
-		//滑空中は重力を弱くする
 			velocity_.y += -kGravityAcceleration * 0.2f / 60.0f;
-			//落下速度を制限
 			velocity_.y = std::max(velocity_.y, -0.08f);
 		} else {
-		//通常の落下
-		velocity_.y += -kGravityAcceleration / 60.0f;
-		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
+			velocity_.y += -kGravityAcceleration / 60.0f;
+			velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
 		}
 	} else {
-	//地上なら滑空フラグをリセット
 		isGliding_ = false;
 	}
 }
