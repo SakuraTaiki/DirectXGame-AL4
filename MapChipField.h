@@ -11,6 +11,7 @@ using namespace KamataEngine;
 enum class MapChipType {
 	kBlank, // 空白
 	kBlock, // ブロック
+	kLadder,
 };
 
 struct MapChipData {
@@ -36,7 +37,6 @@ public:
 	static inline const float kBlockHeight = 1.0f;
 
 	void ResetMapChipData();
-
 	void LoadMapChipCsv(const std::string& filePath);
 
 	Vector3 GetMapChipPositionByIndex(uint32_t xIndex, uint32_t yIndex);
@@ -45,10 +45,12 @@ public:
 	uint32_t GetNumBlockVirtical() const { return kNumBlockVirtical; }
 	uint32_t GetNumBlockHorizontal() const { return kNumBlockHorizontal; }
 
-	// 02_07 スライド22枚目
+	
 	IndexSet GetMapChipIndexSetByPosition(const Vector3& position);
-	// 02_07 スライド33枚目
 	Rect GetRectByIndex(uint32_t xIndex, uint32_t yIndex);
+
+	//はしご判定関数
+	bool IsLadderTile(const Vector3& position);
 
 private:
 	static inline const uint32_t kNumBlockVirtical = 20;

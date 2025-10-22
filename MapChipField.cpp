@@ -11,6 +11,7 @@ namespace {
 std::map<std::string, MapChipType> mapChipTable = {
     {"0", MapChipType::kBlank},
     {"1", MapChipType::kBlock},
+    {"2", MapChipType::kLadder},
 };
 }
 
@@ -101,4 +102,11 @@ MapChipField::Rect MapChipField::GetRectByIndex(uint32_t xIndex, uint32_t yIndex
 
 	return rect;
 }
+
+bool MapChipField::IsLadderTile(const Vector3& position) { 
+	IndexSet index = GetMapChipIndexSetByPosition(position);
+	MapChipType type = GetMapChipTypeByIndex(index.xIndex, index.yIndex);
+	return (type == MapChipType::kLadder);
+}
+
 // eof

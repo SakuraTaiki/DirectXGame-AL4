@@ -10,7 +10,7 @@
 
 void Player::Update() {
 
-	// 02_14 15枚目
+	
 	if (behaviorRequest_ != Behavior::kUnknown) {
 		// 振るまいを変更する
 		behavior_ = behaviorRequest_;
@@ -24,13 +24,13 @@ void Player::Update() {
 		case Behavior::kAttack:
 			BehaviorAttackInitialize();
 			break;
+		case Behavior::kClimb:
+			BehaviorClimbInitialize();
+			break;
 		}
-
-		// 振るまいリクエストをリセット
 		behaviorRequest_ = Behavior::kUnknown;
 	}
 
-	// 02_14 17枚目
 	switch (behavior_) {
 	case Behavior::kRoot:
 	default:
@@ -39,23 +39,17 @@ void Player::Update() {
 	case Behavior::kAttack:
 		BehaviorAttackUpdate();
 		break;
+	case Behavior::kClimb:
+		BehaviorClimbUpdate();
+		break;
 	}
 
-	// 02_14 8枚目 行列計算
+	//座標更新
 	WorldTransformUpdate(worldTransform_);
 	WorldTransformUpdate(worldTransformAttack_);
-
-	// 02_14 6枚目
-	//	BehaviorRootUpdate();
-
-	// 02_14 8枚目 19枚目で削除
-	//	BehaviorAttackUpdate();
 }
 
-// 02_14 16枚目 通常行動初期化
 void Player::BehaviorRootInitialize() {}
-
-// 02_14 6枚目 通常行動更新
 void Player::BehaviorRootUpdate() {
 
 	// 移動入力(02_07 スライド10枚目)
@@ -120,14 +114,6 @@ void Player::BehaviorAttackInitialize() {
 
 // 02_14 8枚目 攻撃行動更新
 void Player::BehaviorAttackUpdate() {
-
-	// 02_14 19枚目 予備動作 → 25枚目で削除
-	//	attackParameter_++;
-
-	// 02_14 19枚目 既定の時間経過で攻撃終了して通常状態に戻す → 25枚目で削除
-	//	if (attackParameter_ >= 20.0f) {
-	//		behaviorRequest_ = Behavior::kRoot;
-	//	}
 
 	// 02_14 29枚目
 	const Vector3 attackVelocity = {0.8f, 0.0f, 0.0f};
@@ -214,6 +200,38 @@ void Player::BehaviorAttackUpdate() {
 	worldTransformAttack_.rotation_ = worldTransform_.rotation_;
 }
 
+void Player::BehaviorClimbInitialize() { 
+	velocity_ = {};
+	isClimbing_ = true;
+	onGround_ = false;
+}
+
+void Player::BehaviorClimbUpdate() { 
+	Input* input = Input::GetInstance();
+
+	//はしご上昇下降
+	if (input->PushKey(DIK_W)) {
+		velocity_.y = 0.05f;
+	} else if (input->PushKey(DIK_S)) {
+		velocity_.y = -0.05f;
+	} else {
+		velocity_.y = 0.0f;
+	}
+	//はしご中は左右移動無効
+	velocity_.x = 0.0f;
+
+	//はしごから離れる処理
+	if (!onLadder_ || input->TriggerKey(DIK_E)) {
+		isClimbing_ = false;
+		behaviorRequest_ = Behavior::kRoot;
+		return;
+	}
+
+	//はしご中は重力無効化
+	//落下しないように地面・空中判定を削除
+	onGround_ = false;
+}
+
 void Player::Initialize(Model* model, Model* modelAttack, Camera* camera, const Vector3& position) {
 
 	assert(model);
@@ -237,6 +255,11 @@ void Player::InputMove() {
 
 	// ===== 横移動処理 =====
 	if (onGround_) {
+
+		if (behavior_ == Behavior::kClimb) {
+			return;
+		}
+
 		// --- 地上 ---
 		if (Input::GetInstance()->PushKey(DIK_RIGHT) || Input::GetInstance()->PushKey(DIK_LEFT)) {
 			Vector3 acceleration = {};

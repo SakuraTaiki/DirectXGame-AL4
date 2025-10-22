@@ -25,6 +25,7 @@ public:
 		kUnknown = -1,
 		kRoot,   // 通常状態
 		kAttack, // 攻撃中
+		kClimb,
 	};
 
 	// 02_14 24枚目 攻撃フェーズ
@@ -72,11 +73,16 @@ public:
 	// 02_14 8枚目 攻撃行動更新
 	void BehaviorAttackUpdate();
 
+	void BehaviorClimbUpdate();
+
 	// 02_14 16枚目 通常行動初期化
 	void BehaviorRootInitialize();
 
 	// 02_14 16枚目 攻撃行動初期化
 	void BehaviorAttackInitialize();
+
+	void BehaviorClimbInitialize();
+
 
 	// 02_15 14枚目
 	bool IsAttack() const { return behavior_ == Behavior::kAttack && attackPhase_ == AttackPhase::kAction; }
@@ -183,7 +189,6 @@ private:
 	bool isCollisionDisabled_ = false; // 衝突無効化
 
 	//2段ジャンプ用　
-
 	int jumpCount_ = 0;//ジャンプ回数
 	int maxJumpCount_ = 2; //最大ジャンプ回数
 
@@ -194,4 +199,7 @@ private:
 	//滑空用の変数
 	bool isGliding_ = false;
 
+	//はしご用
+	bool onLadder_ = false;
+	bool isClimbing_ = false;
 };
