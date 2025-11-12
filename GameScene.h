@@ -129,6 +129,6 @@ private:
 	// 02_16
 	Model* particle_model_ = nullptr;
 	 
-	
+	KamataEngine::Model* ladder_model_ = nullptr;
 	
 };

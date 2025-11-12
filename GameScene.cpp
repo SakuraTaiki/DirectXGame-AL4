@@ -63,6 +63,8 @@ void GameScene::Initialize() {
 	// ブロックモデル
 	block_model_ = Model::CreateFromOBJ("block");
 
+	ladder_model_ = Model::CreateFromOBJ("ladder");
+
 	// デバッグカメラの生成
 	debugCamera_ = new DebugCamera(WinApp::kWindowWidth, WinApp::kWindowHeight);
 
@@ -103,7 +105,6 @@ void GameScene::Initialize() {
 	// 02_06カメラコントローラ スライド18枚目
 	CameraController::Rect cameraArea = {12.0f, 100 - 12.0f, 6.0f, 6.0f};
 	CController_->SetMovableArea(cameraArea);
-
 
 	enemy_model_ = Model::CreateFromOBJ("enemy");
 	for (int32_t i = 0; i < 2; ++i) {
@@ -176,6 +177,14 @@ void GameScene::GenerateBlocks() {
 				worldTransform->Initialize();
 				worldTransformBlocks_[i][j] = worldTransform;
 				worldTransformBlocks_[i][j]->translation_ = mapChipField_->GetMapChipPositionByIndex(j, i);
+
+			} 
+			else if (mapChipField_->GetMapChipTypeByIndex(j, i) == MapChipType::kLadder)
+			{
+				WorldTransform* worldTransform = new WorldTransform();
+				worldTransform->Initialize();
+				worldTransformBlocks_[i][j] = worldTransform;
+				worldTransformBlocks_[i][j]->translation_ = mapChipField_->GetMapChipPositionByIndex(j, i);
 			}
 		}
 	}
@@ -183,8 +192,6 @@ void GameScene::GenerateBlocks() {
 
 // ゲームシーン更新
 void GameScene::Update() {
-
-
 
 	// デスフラグの立ったエフェクトを削除
 	hitEffects_.remove_if([](HitEffect* hitEffect) {
@@ -387,8 +394,13 @@ void GameScene::Draw() {
 				continue;
 
 			block_model_->Draw(*worldTransformBlock, camera_);
+
+
+
 		}
 	}
+
+	
 
 	// 02_09 12枚目 敵更新 → 02_10 7枚目で更新
 	//	enemy_->Draw();
