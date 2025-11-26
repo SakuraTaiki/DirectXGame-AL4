@@ -7,7 +7,6 @@
 
 // 内部リンケージ
 namespace {
-
 std::map<std::string, MapChipType> mapChipTable = {
     {"0", MapChipType::kBlank},
     {"1", MapChipType::kBlock},
@@ -17,7 +16,6 @@ std::map<std::string, MapChipType> mapChipTable = {
 
 // マップチップデータをリセット
 void MapChipField::ResetMapChipData() {
-
 	mapChipData_.data.clear();
 	mapChipData_.data.resize(kNumBlockVirtical);
 
@@ -59,20 +57,39 @@ void MapChipField::LoadMapChipCsv(const std::string& filePath) {
 			std::string word;
 			getline(line_stream, word, ',');
 
-			if (mapChipTable.contains(word)) {
+			// trim front/back (spaces and CR,LF)
+			auto trim = [](std::string& s) {
+				// 左側
+				size_t start = 0;
+				while (start < s.size() && (s[start] == ' ' || s[start] == '\t' || s[start] == '\r' || s[start] == '\n'))
+					++start;
+				// 右側
+				size_t end = s.size();
+				while (end > start && (s[end - 1] == ' ' || s[end - 1] == '\t' || s[end - 1] == '\r' || s[end - 1] == '\n'))
+					--end;
+				if (start == 0 && end == s.size())
+					return;
+				s = s.substr(start, end - start);
+			};
+
+			trim(word);
+
+			if (!word.empty() && mapChipTable.contains(word)) {
 				mapChipData_.data[i][j] = mapChipTable[word];
+			} else {
+				// 規定外トークンは空白扱いに（デバッグ時のみ有効にするなど）
+				mapChipData_.data[i][j] = MapChipType::kBlank;
 			}
 		}
 	}
 }
 
 Vector3 MapChipField::GetMapChipPositionByIndex(uint32_t xIndex, uint32_t yIndex) { return Vector3(kBlockWidth * xIndex, kBlockHeight * (kNumBlockVirtical - 1 - yIndex), 0); }
-
 MapChipType MapChipField::GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex) {
-	if (xIndex < 0 || kNumBlockHorizontal - 1 < xIndex) {
+	if (xIndex >= kNumBlockHorizontal) {
 		return MapChipType::kBlank;
 	}
-	if (yIndex < 0 || kNumBlockVirtical - 1 < yIndex) {
+	if (yIndex >= kNumBlockVirtical) {
 		return MapChipType::kBlank;
 	}
 
@@ -85,7 +102,7 @@ MapChipField::IndexSet MapChipField::GetMapChipIndexSetByPosition(const Vector3&
 	IndexSet indexSet = {};
 
 	indexSet.xIndex = static_cast<uint32_t>((position.x + kBlockWidth / 2.0f) / kBlockWidth);
-	indexSet.yIndex = kNumBlockVirtical - 1 - static_cast<uint32_t>(position.y + kBlockHeight / 2.0f / kBlockHeight);
+	indexSet.yIndex = kNumBlockVirtical - 1 - static_cast<uint32_t>((position.y + kBlockHeight / 2.0f) / kBlockHeight);
 
 	return indexSet;
 }
@@ -109,4 +126,3 @@ bool MapChipField::IsLadderTile(const Vector3& position) {
 	return (type == MapChipType::kLadder);
 }
 
-// eof

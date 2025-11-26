@@ -3,7 +3,6 @@
 #include "Player.h"
 #include "MapChipField.h"
 #include "Math.h"
-
 #include <algorithm>
 #include <cassert>
 #include <numbers>
@@ -96,8 +95,6 @@ void Player::BehaviorRootUpdate() {
 		behaviorRequest_ = Behavior::kAttack;
 	}
 
-	// ワールド行列更新（アフィン変換～DirectXに転送）
-	//	WorldTransformUpdate(worldTransform_);
 }
 
 // 02_14 16枚目 攻撃行動初期化

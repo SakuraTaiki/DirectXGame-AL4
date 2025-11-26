@@ -79,11 +79,9 @@ private:
 	//  プレイヤー
 	Player* player_ = nullptr;
 	// プレイヤーモデル
-	KamataEngine::Model* player_model_ = nullptr;
+	Model* player_model_ = nullptr;
 
-	// ブロックモデル
-	KamataEngine::Model* block_model_ = nullptr;
-	std::vector<std::vector<WorldTransform*>> worldTransformBlocks_;
+	
 
 	// デバッグカメラ有効
 	bool isDebugCameraActive_ = false;
@@ -101,7 +99,6 @@ private:
 	CameraController* CController_ = nullptr;
 
 	
-
 	// 02_09 10枚目 エネミーモデル
 	KamataEngine::Model* enemy_model_ = nullptr;
 
@@ -126,9 +123,13 @@ private:
 	// 02_16 17枚目
 	std::list<HitEffect*> hitEffects_;
 
-	// 02_16
 	Model* particle_model_ = nullptr;
 	 
-	KamataEngine::Model* ladder_model_ = nullptr;
+
+	Model* block_model_ = nullptr;
+	Model* ladder_model_ = nullptr;
+
+	std::vector<std::vector<WorldTransform*>> worldTransformBlocks_;
+	std::vector<std::vector<WorldTransform*>> worldTransformLadders_;
 	
 };

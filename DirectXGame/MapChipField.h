@@ -1,5 +1,4 @@
 #pragma once
-
 #include "KamataEngine.h"
 #include "Math.h"
 #include <cstdint>

@@ -28,8 +28,7 @@ GameScene::~GameScene() {
 	delete modelSkydome_;
 	delete mapChipField_;
 
-	// 02_09 10枚目 敵クラス削除→02_10 6枚目で削除
-	//	delete enemies_;
+	
 
 	// 02_10 6枚目 敵クラス削除
 	for (Enemy* enemy : enemies_) {
@@ -64,37 +63,37 @@ void GameScene::Initialize() {
 	block_model_ = Model::CreateFromOBJ("block");
 
 	ladder_model_ = Model::CreateFromOBJ("ladder");
-
-	// デバッグカメラの生成
-	debugCamera_ = new DebugCamera(WinApp::kWindowWidth, WinApp::kWindowHeight);
-
-	// 02_03 skydome生成
+	
+	
+	//スカイドーム初期化
 	skydome_ = new Skydome();
-	// 初期化
 	modelSkydome_ = Model::CreateFromOBJ("SkyDome", true);
 	skydome_->Initialize(modelSkydome_, &camera_);
 
 	// 02_04マップチップ
 	mapChipField_ = new MapChipField;
 	mapChipField_->LoadMapChipCsv("Resources/blocks.csv");
+	
+	uint32_t height = mapChipField_->GetNumBlockVirtical();
+	uint32_t width = mapChipField_->GetNumBlockHorizontal();
+
+	worldTransformBlocks_.resize(height);
+	worldTransformLadders_.resize(height);
+	
+	for (uint32_t i = 0; i < height; i++) {
+		worldTransformBlocks_[i].resize(width, nullptr);
+		worldTransformLadders_[i].resize(width, nullptr);
+	}
 	GenerateBlocks();
 
-	// 02_07 マップチップクラスを作ってからプレイヤークラスを作る
-	// という順番に入れ替える
-	// 02_01から追加 プレイヤー生成
+	//プレイヤー初期化
 	player_ = new Player();
-
-	// プレイヤーモデル
 	player_model_ = Model::CreateFromOBJ("player");
 	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(2, 18);
-	// 02_14 34枚目 プレイヤー攻撃エフェクトモデル
 	modelAttack_ = Model::CreateFromOBJ("attack_effect");
-
-	// 02_07 スライド5枚目
 	player_->SetMapChipField(mapChipField_);
-
-	// 02_14 34枚目でプレイヤー攻撃エフェクト引数追加
 	player_->Initialize(player_model_, modelAttack_, &camera_, playerPosition);
+
 
 	// 02_06カメラコントローラ スライド13枚目
 	CController_ = new CameraController(); // 生成
@@ -102,10 +101,13 @@ void GameScene::Initialize() {
 	CController_->SetTarget(player_);      // 追従対象セット
 	CController_->Reset();                 // リセット
 
-	// 02_06カメラコントローラ スライド18枚目
 	CameraController::Rect cameraArea = {12.0f, 100 - 12.0f, 6.0f, 6.0f};
 	CController_->SetMovableArea(cameraArea);
 
+	// デバッグカメラの生成
+	debugCamera_ = new DebugCamera(WinApp::kWindowWidth, WinApp::kWindowHeight);
+
+	//エネミーモデル初期化
 	enemy_model_ = Model::CreateFromOBJ("enemy");
 	for (int32_t i = 0; i < 2; ++i) {
 		Enemy* newEnemy = new Enemy();
@@ -118,10 +120,8 @@ void GameScene::Initialize() {
 		enemies_.push_back(newEnemy);
 	}
 
-	// 02_11_16枚目 モデル読み込み
+	//パーティクル初期化
 	deathParticle_model_ = Model::CreateFromOBJ("deathParticle");
-
-	// 02_16
 	particle_model_ = Model::CreateFromOBJ("particle");
 	phase_ = Phase::kFadeIn;
 
@@ -132,16 +132,15 @@ void GameScene::Initialize() {
 
 	HitEffect::SetModel(particle_model_);
 	HitEffect::SetCamera(&camera_);
+
 }
 
-// 02_12 10枚目 GameScene::Update関数で呼び出しておく
-// player->draw();をif(!player_->IsDead()){}で囲む
+
 void GameScene::ChangePhase() {
 
 	switch (phase_) {
 	case Phase::kPlay:
-		// 02_12 13枚目 if文から中身まで全部実装
-		// Initialize関数のいきなりパーティクル発生処理は消す
+		
 		if (player_->IsDead()) {
 			// 死亡演出
 			phase_ = Phase::kDeath;
@@ -159,32 +158,30 @@ void GameScene::ChangePhase() {
 
 void GameScene::GenerateBlocks() {
 
-	uint32_t numBlockVirtical = mapChipField_->GetNumBlockVirtical();
-	uint32_t numBlockHorizontal = mapChipField_->GetNumBlockHorizontal();
+	uint32_t height = mapChipField_->GetNumBlockVirtical();
+	uint32_t width = mapChipField_->GetNumBlockHorizontal();
 
-	worldTransformBlocks_.resize(numBlockVirtical);
-	for (uint32_t i = 0; i < numBlockVirtical; ++i) {
-		worldTransformBlocks_[i].resize(numBlockHorizontal);
-	}
+	
+	for (uint32_t i = 0; i < height; ++i) {
+		for (uint32_t j = 0; j < width; j++) {
+			MapChipType type = mapChipField_->GetMapChipTypeByIndex(j, i);
 
-	// ブロックの生成
-	for (uint32_t i = 0; i < numBlockVirtical; ++i) {
-
-		for (uint32_t j = 0; j < numBlockHorizontal; ++j) {
-
-			if (mapChipField_->GetMapChipTypeByIndex(j, i) == MapChipType::kBlock) {
+			// ブロックの生成
+			if (type == MapChipType::kBlock) {
 				WorldTransform* worldTransform = new WorldTransform();
 				worldTransform->Initialize();
-				worldTransformBlocks_[i][j] = worldTransform;
-				worldTransformBlocks_[i][j]->translation_ = mapChipField_->GetMapChipPositionByIndex(j, i);
+				worldTransform->translation_ = mapChipField_->GetMapChipPositionByIndex(j, i);
 
-			} 
-			else if (mapChipField_->GetMapChipTypeByIndex(j, i) == MapChipType::kLadder)
-			{
+				worldTransformBlocks_[i][j] = worldTransform;
+			}
+			
+			//はしご生成
+			else if (type == MapChipType::kLadder) {
 				WorldTransform* worldTransform = new WorldTransform();
 				worldTransform->Initialize();
-				worldTransformBlocks_[i][j] = worldTransform;
-				worldTransformBlocks_[i][j]->translation_ = mapChipField_->GetMapChipPositionByIndex(j, i);
+				worldTransform->translation_ = mapChipField_->GetMapChipPositionByIndex(j, i);
+
+				worldTransformLadders_[i][j] = worldTransform;
 			}
 		}
 	}
@@ -236,15 +233,6 @@ void GameScene::Update() {
 			hitEffect->Update();
 		}
 
-		// UpdateCamera();
-		/*
-		#ifdef _DEBUG
-		        if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
-		            // フラグをトグル
-		            isDebugCameraActive_ = !isDebugCameraActive_;
-		        }
-		#endif
-		*/
 		// カメラの処理
 		if (isDebugCameraActive_) {
 			debugCamera_->Update();
@@ -277,9 +265,7 @@ void GameScene::Update() {
 	case Phase::kPlay:
 		skydome_->Update();
 		CController_->Update();
-		//		worldTransformSkydome_.UpdateMatrix();
-		//		cameraController->Update();
-
+		
 		// 自キャラの更新
 		player_->Update();
 
@@ -287,15 +273,6 @@ void GameScene::Update() {
 			enemy->Update();
 		}
 
-		//		UpdateCamera();
-		/*
-		#ifdef _DEBUG
-		        if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
-		            // フラグをトグル
-		            isDebugCameraActive_ = !isDebugCameraActive_;
-		        }
-		#endif
-		*/
 		// カメラの処理
 		if (isDebugCameraActive_) {
 			debugCamera_->Update();
@@ -308,7 +285,7 @@ void GameScene::Update() {
 			camera_.UpdateMatrix();
 		}
 
-		//		UpdateBlocks();
+		
 		// ブロックの更新
 		for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
 			for (WorldTransform*& worldTransformBlock : worldTransformBlockLine) {
@@ -334,8 +311,6 @@ void GameScene::Update() {
 
 		skydome_->Update();
 		CController_->Update();
-		//		worldTransformSkydome_.UpdateMatrix();
-		//		UpdateCamera();
 
 		for (Enemy* enemy : enemies_) {
 			enemy->Update();
@@ -357,9 +332,7 @@ void GameScene::Update() {
 
 		skydome_->Update();
 		CController_->Update();
-		//		worldTransformSkydome_.UpdateMatrix();
-		//		UpdateCamera();
-
+		
 		for (Enemy* enemy : enemies_) {
 			enemy->Update();
 		}
@@ -387,20 +360,26 @@ void GameScene::Draw() {
 	// 天球描画
 	skydome_->Draw();
 
+	size_t height = worldTransformBlocks_.size();
+	size_t width = worldTransformBlocks_[0].size();
+
 	// ブロックの描画
-	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
-		for (WorldTransform*& worldTransformBlock : worldTransformBlockLine) {
-			if (!worldTransformBlock)
-				continue;
-
-			block_model_->Draw(*worldTransformBlock, camera_);
-
-
-
+	for (size_t i = 0; i < height;i++) {
+		for (size_t j = 0; j < width;j++) {
+			if (worldTransformBlocks_[i][j]) {
+				block_model_->Draw(*worldTransformBlocks_[i][j],camera_);
+			}
 		}
 	}
 
-	
+	//はしご描画
+	for (size_t i = 0; i < height; i++) {
+		for (size_t j = 0; j < width; j++) {
+			if (worldTransformLadders_[i][j]) {
+				ladder_model_->Draw(*worldTransformLadders_[i][j], camera_);
+			}
+		}
+	}
 
 	// 02_09 12枚目 敵更新 → 02_10 7枚目で更新
 	//	enemy_->Draw();
