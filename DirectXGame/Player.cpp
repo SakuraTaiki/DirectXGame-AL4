@@ -51,6 +51,24 @@ void Player::Update() {
 void Player::BehaviorRootInitialize() {}
 void Player::BehaviorRootUpdate() {
 
+	//はしご判定
+	onLadder_ = false;
+
+	//プレイヤー中心の位置
+	Vector3 center = worldTransform_.translation_;
+	MapChipField::IndexSet index = mapChipField_->GetMapChipIndexSetByPosition(center);
+	MapChipType type = mapChipField_->GetMapChipTypeByIndex(index.xIndex, index.yIndex);
+
+	if (type == MapChipType::kLadder) {
+		onLadder_ = true;
+	}
+
+	//Wを押したらはしごへ遷移
+	if (Input::GetInstance()->PushKey(DIK_W)) {
+		behaviorRequest_ = Behavior::kClimb;
+		return;
+	}
+
 	// 移動入力(02_07 スライド10枚目)
 	InputMove();
 
@@ -68,7 +86,9 @@ void Player::BehaviorRootUpdate() {
 
 	// 天井接触による落下開始(02_07 スライド38枚目)
 	if (collisionMapInfo.ceiling) {
-		velocity_.y = 0;
+		if (velocity_.y > 0.0f) {
+			velocity_.y = 0.0f;
+		}
 	}
 
 	// 02_08 スライド27枚目 壁接触している場合の処理
@@ -205,6 +225,12 @@ void Player::BehaviorClimbInitialize() {
 
 void Player::BehaviorClimbUpdate() { 
 	Input* input = Input::GetInstance();
+	{
+		Vector3 center = worldTransform_.translation_;
+		auto index = mapChipField_->GetMapChipIndexSetByPosition(center);
+		auto type = mapChipField_->GetMapChipTypeByIndex(index.xIndex, index.yIndex);
+		onLadder_ = (type == MapChipType::kLadder);
+	}
 
 	//はしご上昇下降
 	if (input->PushKey(DIK_W)) {
@@ -214,8 +240,19 @@ void Player::BehaviorClimbUpdate() {
 	} else {
 		velocity_.y = 0.0f;
 	}
-	//はしご中は左右移動無効
-	velocity_.x = 0.0f;
+	
+	//はしご中左右移動
+	const float ladderMoveX = 0.03f;
+
+	if (input->PushKey(DIK_A)) {
+		velocity_.x = -ladderMoveX;
+		lrDirection_ = LRDirection::kLeft;
+	} else if (input->PushKey(DIK_D)) {
+		velocity_.x = ladderMoveX;
+		lrDirection_ = LRDirection::kRight;
+	} else {
+		velocity_.x = 0.0f;
+	}
 
 	//はしごから離れる処理
 	if (!onLadder_ || input->TriggerKey(DIK_E)) {
@@ -227,6 +264,9 @@ void Player::BehaviorClimbUpdate() {
 	//はしご中は重力無効化
 	//落下しないように地面・空中判定を削除
 	onGround_ = false;
+
+	//実際に移動させる
+	worldTransform_.translation_ += velocity_;
 }
 
 void Player::Initialize(Model* model, Model* modelAttack, Camera* camera, const Vector3& position) {
@@ -434,7 +474,11 @@ void Player::CheckMapCollisionUp(CollisionMapInfo& info) {
 		if (indexSetNow.yIndex != indexSet.yIndex) {
 			// めり込みを排除する方向に移動量を設定する
 			MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
-			info.move.y = std::max(0.0f, rect.bottom - worldTransform_.translation_.y - (kHeight / 2.0f + kBlank));
+
+			float topLimit = rect.bottom - (kHeight / 2.0f + kBlank);
+			float currentTop = worldTransform_.translation_.y;
+
+			info.move.y = std::max(0.0f, topLimit-currentTop);
 			info.ceiling = true;
 		}
 	}

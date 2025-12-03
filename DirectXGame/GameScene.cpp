@@ -13,10 +13,6 @@ void GameScene::CreateEffect(const Vector3& position) {
 
 GameScene::~GameScene() {
 
-	delete sprite_;
-	delete model_;
-
-	delete block_model_;
 	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
 		for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
 			delete worldTransformBlock;
@@ -24,22 +20,30 @@ GameScene::~GameScene() {
 	}
 	worldTransformBlocks_.clear();
 
+	for (std::vector<WorldTransform*>& worldTransformLadderLine : worldTransformLadders_) {
+		for (WorldTransform* worldTransformLadder : worldTransformLadderLine) {
+			delete worldTransformLadder;
+		}
+	}
+	worldTransformLadders_.clear();
+
 	delete debugCamera_;
 	delete modelSkydome_;
 	delete mapChipField_;
+	delete sprite_;
+	delete model_;
 
+	delete block_model_;
 	
+	delete ladder_model_;
+	delete deathParticles_;
+	delete deathParticle_model_;
 
 	// 02_10 6枚目 敵クラス削除
 	for (Enemy* enemy : enemies_) {
 		delete enemy;
 	}
 
-	// 02_11_17枚目
-	delete deathParticles_;
-	delete deathParticle_model_;
-
-	// 02_16 17枚目
 	for (HitEffect* hitEffect : hitEffects_) {
 		delete hitEffect;
 	}
@@ -295,6 +299,14 @@ void GameScene::Update() {
 
 				// アフィン変換～DirectXに転送
 				WorldTransformUpdate(*worldTransformBlock);
+			}
+		}
+
+		for (std::vector<WorldTransform*>& worldTransformLadderLine : worldTransformLadders_) {
+			for (WorldTransform*& worldTransformLadder : worldTransformLadderLine) {
+				if (!worldTransformLadder)
+					continue;
+				WorldTransformUpdate(*worldTransformLadder);
 			}
 		}
 
