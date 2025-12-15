@@ -8,7 +8,9 @@
 #include "MapChipField.h"
 #include "Player.h"
 #include "skydome.h"
+#include"Bullet.h"
 #include <vector>
+#include<list>
 
 // ゲームシーンクラス
 class GameScene {
@@ -44,6 +46,11 @@ public:
 
 	void TogglePause() { isPaused_ = !isPaused_; }
 	bool IsPaused() const { return isPaused_; }
+
+	std::list<Bullet*> bullets_;
+	Model* bulletModel_ = nullptr;
+
+	void CreatePlayerBullet(const Vector3& pos, const Vector3& vel);
 
 private:
 	// 02_12 4枚目 ゲームのフェーズ（型）

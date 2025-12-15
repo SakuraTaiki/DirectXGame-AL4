@@ -1,6 +1,7 @@
 #pragma once
 #include "KamataEngine.h"
 #include "Math.h"
+#include "GameScene.h"
 
 using namespace KamataEngine;
 
@@ -54,6 +55,9 @@ public:
 
 	// 02_07 スライド4枚目
 	void SetMapChipField(MapChipField* mapChipField) { mapChipField_ = mapChipField; }
+
+	void SetGameScene(GameScene* gameScene) { gameScene_ = gameScene };
+	GameScene* gameScene_ = nullptr;
 
 	// 02_10 10枚目 ワールド座標を取得
 	Vector3 GetWorldPosition() const;

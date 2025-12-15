@@ -11,6 +11,12 @@ void GameScene::CreateEffect(const Vector3& position) {
 	hitEffects_.push_back(newHitEffect);
 }
 
+void GameScene::CreatePlayerBullet(const Vector3& pos, const Vector3& vel) 
+{
+    Bullet* bullet = Bullet::Create(bulletModel_,&camera_,pos,vel);
+	bullets_.push_back(bullet);
+}
+
 GameScene::~GameScene() {
 
 	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
@@ -94,6 +100,7 @@ void GameScene::Initialize() {
 	player_ = new Player();
 	player_model_ = Model::CreateFromOBJ("player");
 	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(2, 18);
+	bulletModel_ = Model::CreateFromOBJ("player_Bullet");
 	modelAttack_ = Model::CreateFromOBJ("attack_effect");
 	player_->SetMapChipField(mapChipField_);
 	player_->Initialize(player_model_, modelAttack_, &camera_, playerPosition);
@@ -193,6 +200,18 @@ void GameScene::GenerateBlocks() {
 
 // ゲームシーン更新
 void GameScene::Update() {
+
+	for (Bullet* bullet : bullets_) {
+		bullet->Update();
+	}
+
+	bullets_.remove_if([](Bullet* bullet) {
+		if (bullet->IsDead()) {
+			delete bullet;
+			return true;
+		}
+		return false;
+	});
 
 	// デスフラグの立ったエフェクトを削除
 	hitEffects_.remove_if([](HitEffect* hitEffect) {
@@ -406,6 +425,10 @@ void GameScene::Draw() {
 
 	for (HitEffect* hitEffect : hitEffects_) {
 		hitEffect->Draw();
+	}
+
+	for (Bullet* bullet : bullets_) {
+		bullet->Draw();
 	}
 
 	Model::PostDraw();
