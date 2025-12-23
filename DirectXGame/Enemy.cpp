@@ -4,6 +4,7 @@
 #include "Player.h"
 #include <cassert>
 #include <numbers>
+#include"Bullet.h"
 
 // 02_09 スライド5枚目
 void Enemy::Initialize(Model* model, Camera* camera, const Vector3& position) {
@@ -147,4 +148,25 @@ void Enemy::OnCollision(const Player* player) {
 		// 02_15 20枚目 衝突を無効化
 		isCollisionDisabled_ = true;
 	}
+}
+
+void Enemy::OnCollision(Bullet* bullet) {
+
+	// すでにやられているなら何もしない
+	if (behavior_ == Behavior::kDefeated) {
+		return;
+	}
+
+	// エフェクト生成
+	if (gameScene_) {
+		Vector3 effectPos = GetWorldPosition();
+		gameScene_->CreateEffect(effectPos);
+	}
+
+	// 弾を消す
+	bullet->OnCollision();
+
+	// 敵を倒す
+	behaviorRequest_ = Behavior::kDefeated;
+	isCollisionDisabled_ = true;
 }

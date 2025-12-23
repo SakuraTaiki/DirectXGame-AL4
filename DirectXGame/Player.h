@@ -1,11 +1,12 @@
 #pragma once
 #include "KamataEngine.h"
 #include "Math.h"
-#include "GameScene.h"
 
 using namespace KamataEngine;
 
 class MapChipField;
+
+class GameScene;
 
 // 02_10 21枚目
 class Enemy;
@@ -39,7 +40,7 @@ public:
 	};
 
 	/// 初期化
-	void Initialize(Model* model, Model* modelAttack, Camera* camera, const Vector3& position);
+	void Initialize(Model* model, Camera* camera, const Vector3& position);
 
 	/// 更新
 	void Update();
@@ -47,17 +48,20 @@ public:
 	/// 描画
 	void Draw();
 
+	// 02_07 スライド4枚目
+	void SetMapChipField(MapChipField* mapChipField) { mapChipField_ = mapChipField; }
+
+	void SetGameScene(GameScene* gameScene) { gameScene_ = gameScene; }
+	
+
 	// getter(02_06スライド11枚目で追加)
 	const WorldTransform& GetWorldTransform() const { return worldTransform_; }
 
 	// 02_06スライド28枚目で追加
 	const Vector3& GetVelocity() const { return velocity_; }
 
-	// 02_07 スライド4枚目
-	void SetMapChipField(MapChipField* mapChipField) { mapChipField_ = mapChipField; }
-
-	void SetGameScene(GameScene* gameScene) { gameScene_ = gameScene };
-	GameScene* gameScene_ = nullptr;
+	
+	
 
 	// 02_10 10枚目 ワールド座標を取得
 	Vector3 GetWorldPosition() const;
@@ -102,6 +106,7 @@ private:
 	// テクスチャハンドル
 	uint32_t textureHandle_ = 0u;
 	Camera* camera_ = nullptr;
+	GameScene* gameScene_ = nullptr;
 	// 02_05 移動量
 	Vector3 velocity_ = {};
 	// 02_05  フレームごとの加速度
@@ -185,9 +190,7 @@ private:
 	static inline const uint32_t kActionTime = 5;
 	// 02_14 26枚目 余韻動作の時間
 	static inline const uint32_t kRecoveryTime = 12;
-	// 02_14 34枚目 攻撃エフェクト
-	Model* modelAttack_ = nullptr;
-	WorldTransform worldTransformAttack_;
+	
 
 	// 02_15 20枚目
 	bool isCollisionDisabled_ = false; // 衝突無効化

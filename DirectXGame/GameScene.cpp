@@ -53,6 +53,10 @@ GameScene::~GameScene() {
 	for (HitEffect* hitEffect : hitEffects_) {
 		delete hitEffect;
 	}
+
+	for (Bullet* bullet : bullets_) {
+		delete bullet;
+	}
 }
 
 void GameScene::Initialize() {
@@ -100,11 +104,11 @@ void GameScene::Initialize() {
 	player_ = new Player();
 	player_model_ = Model::CreateFromOBJ("player");
 	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(2, 18);
-	bulletModel_ = Model::CreateFromOBJ("player_Bullet");
-	modelAttack_ = Model::CreateFromOBJ("attack_effect");
+	bulletModel_ = Model::CreateFromOBJ("attack");
+	
 	player_->SetMapChipField(mapChipField_);
-	player_->Initialize(player_model_, modelAttack_, &camera_, playerPosition);
-
+	player_->Initialize(player_model_, &camera_, playerPosition);
+	player_->SetGameScene(this);
 
 	// 02_06カメラコントローラ スライド13枚目
 	CController_ = new CameraController(); // 生成
@@ -198,12 +202,24 @@ void GameScene::GenerateBlocks() {
 	}
 }
 
+bool IsCollisionSphereAABB(const Vector3& sphereCenter, float sphereRadius, const AABB& aabb) {
+
+	float x = std::clamp(sphereCenter.x, aabb.min.x, aabb.max.x);
+	float y = std::clamp(sphereCenter.y, aabb.min.y, aabb.max.y);
+	float z = std::clamp(sphereCenter.z, aabb.min.z, aabb.max.z);
+
+	float dx = sphereCenter.x - x;
+	float dy = sphereCenter.y - y;
+	float dz = sphereCenter.z - z;
+
+	return (dx * dx + dy * dy + dz * dz) <= (sphereRadius * sphereRadius);
+}
+
 // ゲームシーン更新
 void GameScene::Update() {
 
-	for (Bullet* bullet : bullets_) {
-		bullet->Update();
-	}
+	
+
 
 	bullets_.remove_if([](Bullet* bullet) {
 		if (bullet->IsDead()) {
@@ -252,6 +268,26 @@ void GameScene::Update() {
 			enemy->Update();
 		}
 
+		for (Bullet* bullet : bullets_) {
+			bullet->Update();
+		}
+
+		for (Bullet* bullet : bullets_) {
+			for (Enemy* enemy : enemies_) {
+
+				// 衝突無効の敵はスキップ
+				if (enemy->IsCollisionDisabled()) {
+					continue;
+				}
+
+				if (IsCollisionSphereAABB(bullet->GetWorldPosition(), bullet->GetRadius(), enemy->GetAABB())) {
+
+					enemy->OnCollision(bullet);
+					break; // 1発1ヒット
+				}
+			}
+		}
+
 		for (HitEffect* hitEffect : hitEffects_) {
 			hitEffect->Update();
 		}
@@ -294,6 +330,27 @@ void GameScene::Update() {
 
 		for (Enemy* enemy : enemies_) {
 			enemy->Update();
+		}
+
+		 for (Bullet* bullet : bullets_) {
+			bullet->Update();
+		}
+
+		// 弾 vs 敵 当たり判定
+		for (Bullet* bullet : bullets_) {
+			for (Enemy* enemy : enemies_) {
+
+				if (enemy->IsCollisionDisabled()) {
+					continue;
+				}
+
+				if (IsCollisionSphereAABB(bullet->GetWorldPosition(), bullet->GetRadius(), enemy->GetAABB())) {
+
+					enemy->OnCollision(bullet);
+					bullet->OnCollision(); // ← あれば
+					break;
+				}
+			}
 		}
 
 		// カメラの処理

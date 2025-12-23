@@ -9,6 +9,7 @@ using namespace KamataEngine;
 // 02_10 20枚目
 // class Player;
 class GameScene;
+class Bullet;
 
 // 02_09 スライド4枚目
 class Enemy {
@@ -33,6 +34,7 @@ public:
 	Vector3 GetWorldPosition();
 	// 02_10 スライド20枚目 衝突応答
 	void OnCollision(const Player* player);
+	void OnCollision(Bullet* bullet);
 	// 02_15 6枚目
 	bool IsDead() const { return isDead_; }
 	// 02_15 20枚目

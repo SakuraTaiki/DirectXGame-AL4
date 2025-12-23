@@ -1,5 +1,6 @@
 #define NOMINMAX
 
+#include"GameScene.h"
 #include "Player.h"
 #include "MapChipField.h"
 #include "Math.h"
@@ -45,10 +46,10 @@ void Player::Update() {
 
 	//座標更新
 	WorldTransformUpdate(worldTransform_);
-	WorldTransformUpdate(worldTransformAttack_);
 }
 
 void Player::BehaviorRootInitialize() {}
+
 void Player::BehaviorRootUpdate() {
 
 	//はしご判定
@@ -144,43 +145,41 @@ void Player::BehaviorAttackUpdate() {
 	switch (attackPhase_) {
 	case AttackPhase::kAnticipation: // 溜め動作
 	// 02_14 26枚目
-	default: {
-		velocity = {};
-		float t = static_cast<float>(attackParameter_) / kAnticipationTime;
-		worldTransform_.scale_.z = EaseOut(1.0f, 0.3f, t);
-		worldTransform_.scale_.y = EaseOut(1.0f, 1.6f, t);
-
+	
 		// 前進動作へ移行
 		if (attackParameter_ >= kAnticipationTime) {
 			attackPhase_ = AttackPhase::kAction;
 			attackParameter_ = 0; // カウンターをリセット
 		}
 		break;
-	}
+	
 	// 02_14 27枚目
-	case AttackPhase::kAction: { // 突進動作
-		if (lrDirection_ == LRDirection::kRight) {
-			velocity = +attackVelocity;
-		} else {
-			velocity = -attackVelocity;
+	case AttackPhase::kAction: { 
+		 // 攻撃開始フレームで1回だけ弾生成
+		if (attackParameter_ == 1 && gameScene_) {
+
+			Vector3 bulletPos = GetWorldPosition();
+			bulletPos.z -= 1.0f;
+
+			Vector3 bulletVel{};
+			if (lrDirection_ == LRDirection::kRight) {
+				bulletVel = {0.5f, 0.0f, 0.0f};
+			} else {
+				bulletVel = {-0.5f, 0.0f, 0.0f};
+			}
+
+			gameScene_->CreatePlayerBullet(bulletPos, bulletVel);
 		}
 
-		float t = static_cast<float>(attackParameter_) / kActionTime;
-		worldTransform_.scale_.z = EaseOut(0.3f, 1.3f, t);
-		worldTransform_.scale_.y = EaseIn(1.6f, 0.7f, t);
-
-		// 余韻動作へ移行
 		if (attackParameter_ >= kActionTime) {
 			attackPhase_ = AttackPhase::kRecovery;
-			attackParameter_ = 0; // パラメータをリセット
+			attackParameter_ = 0;
 		}
+
 	} break;
 	// 02_14 28枚目
-	case AttackPhase::kRecovery: { // 余韻動作
-		velocity = {};
-		float t = static_cast<float>(attackParameter_) / kRecoveryTime;
-		worldTransform_.scale_.z = EaseOut(1.3f, 1.0f, t);
-		worldTransform_.scale_.y = EaseOut(0.7f, 1.0f, t);
+	case AttackPhase::kRecovery: { 
+	
 
 		// 通常行動に戻る
 		if (attackParameter_ >= kRecoveryTime) {
@@ -213,8 +212,6 @@ void Player::BehaviorAttackUpdate() {
 		worldTransform_.rotation_.y = EaseInOut(destinationRotationY, turnFirstRotationY_, turnTimer_ / kTimeTurn);
 	}
 
-	worldTransformAttack_.translation_ = worldTransform_.translation_;
-	worldTransformAttack_.rotation_ = worldTransform_.rotation_;
 }
 
 void Player::BehaviorClimbInitialize() { 
@@ -269,22 +266,16 @@ void Player::BehaviorClimbUpdate() {
 	worldTransform_.translation_ += velocity_;
 }
 
-void Player::Initialize(Model* model, Model* modelAttack, Camera* camera, const Vector3& position) {
+void Player::Initialize(Model* model, Camera* camera, const Vector3& position) {
 
 	assert(model);
 	// モデル
 	model_ = model;
-	modelAttack_ = modelAttack;
+	
 
 	worldTransform_.Initialize();
 	worldTransform_.translation_ = position;
 	worldTransform_.rotation_.y = std::numbers::pi_v<float> / 2.0f;
-
-	worldTransformAttack_.Initialize();
-	worldTransformAttack_.translation_ = worldTransform_.translation_;
-	worldTransformAttack_.rotation_ = worldTransform_.rotation_;
-
-	
 
 	camera_ = camera;
 }
@@ -750,7 +741,6 @@ void Player::Draw() {
 			break;
 		case AttackPhase::kAction:
 		case AttackPhase::kRecovery:
-			modelAttack_->Draw(worldTransformAttack_, *camera_);
 			break;
 		}
 	}
@@ -759,12 +749,7 @@ void Player::Draw() {
 // 02_10 10枚目
 Vector3 Player::GetWorldPosition() const {
 
-	Vector3 worldPos;
-	// ワールド行列の平行移動成分を取得（ワールド座標）
-	worldPos.x = worldTransform_.matWorld_.m[3][0];
-	worldPos.y = worldTransform_.matWorld_.m[3][1];
-	worldPos.z = worldTransform_.matWorld_.m[3][2];
-	return worldPos;
+	return {worldTransform_.matWorld_.m[3][0], worldTransform_.matWorld_.m[3][1], worldTransform_.matWorld_.m[3][2]};
 }
 
 // 02_10 14枚目
