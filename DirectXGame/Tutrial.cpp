@@ -1,19 +1,19 @@
-#include "TitleScene.h"
+#include "Tutrial.h"
 #include "Math.h"
 #include <numbers>
 
-TitleScene::~TitleScene() {
-	
-	delete spriteTitle_;
+Tutrial::~Tutrial() {
+
+	delete spriteTutrial_;
 
 	delete fade_;
 }
 
-void TitleScene::Initialize() {
+void Tutrial::Initialize() {
 
-	textureHandle_ = TextureManager::Load("TitleScene.png");
+	textureHandle_ = TextureManager::Load("Tutrial.png");
 
-	spriteTitle_ = Sprite::Create(textureHandle_, {640.0f, 360.0f}, {1, 1, 1, 1}, {0.5f, 0.5f});
+	spriteTutrial_ = Sprite::Create(textureHandle_, {640.0f, 360.0f}, {1, 1, 1, 1}, {0.5f, 0.5f});
 
 	fade_ = new Fade();
 
@@ -21,12 +21,14 @@ void TitleScene::Initialize() {
 
 	// 02_13 22枚目
 	fade_->Start(Fade::Status::FadeIn, 1.0f);
-
-	
-	
 }
 
-void TitleScene::Update() {
+void Tutrial::Update() {
+
+	//// 02_12 27枚目
+	// if (Input::GetInstance()->PushKey(DIK_SPACE)) {
+	//	finished_ = true;
+	// }
 
 	switch (phase_) {
 	case Phase::kFadeIn:
@@ -49,11 +51,9 @@ void TitleScene::Update() {
 		}
 		break;
 	}
-
-	
 }
 
-void TitleScene::Draw() {
+void Tutrial::Draw() {
 
 	DirectXCommon* dxCommon_ = DirectXCommon::GetInstance();
 	// コマンドリストの取得
@@ -61,8 +61,8 @@ void TitleScene::Draw() {
 
 	Sprite::PreDraw(commandList);
 
-	spriteTitle_->Draw();
-	
+	spriteTutrial_->Draw();
+
 	fade_->Draw();
 	Sprite::PostDraw();
 }

@@ -28,12 +28,11 @@ private:
 	static inline const float kTimeTitleMove = 2.0f;
 
 	// ビュープロジェクション
-	Camera camera_;
-	WorldTransform worldTransformTitle_;
-	WorldTransform worldTransformPlayer_;
+	
+	
+	Sprite* spriteTitle_ = nullptr;
 
-	Model* modelPlayer_ = nullptr;
-	Model* modelTitle_ = nullptr;
+	uint32_t textureHandle_ = 0;
 
 	Fade* fade_ = nullptr;
 

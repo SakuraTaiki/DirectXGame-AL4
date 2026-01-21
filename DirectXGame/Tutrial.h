@@ -1,12 +1,11 @@
 #pragma once
-
 #include "Fade.h"
 #include "KamataEngine.h"
 
 using namespace KamataEngine;
 
-// 02_12 19枚目 タイトルシーン
-class GameClear {
+class Tutrial 
+{
 public:
 	enum class Phase {
 		kFadeIn,
@@ -14,7 +13,7 @@ public:
 		kFadeOut,
 	};
 
-	~GameClear();
+	~Tutrial();
 
 	void Initialize();
 
@@ -26,17 +25,15 @@ public:
 	bool IsFinished() const { return finished_; }
 
 private:
-	static inline const float kTimeGameClearMove = 2.0f;
+	static inline const float kTimeTutrial = 2.0f;
 
 	// ビュープロジェクション
-	
+
 	Fade* fade_ = nullptr;
 
-	Sprite* spriteGameClear_ = nullptr;
+	Sprite* spriteTutrial_ = nullptr;
 
 	uint32_t textureHandle_ = 0;
-
-
 
 	float counter_ = 0.0f;
 	// 02_12 26枚目

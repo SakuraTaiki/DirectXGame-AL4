@@ -3,6 +3,7 @@
 #include"Enemy.h"
 #include "KamataEngine.h"
 #include "TitleScene.h"
+#include"Tutrial.h"
 #include"GameClear.h"
 #include"GameOver.h"
 #include <Windows.h>
@@ -15,6 +16,7 @@ using namespace KamataEngine;
 // ゲームシーンのインスタンス生成
 GameScene* gameScene = nullptr;
 TitleScene* titleScene = nullptr;
+Tutrial* tutrialScene = nullptr;
 GameClear* gameClearScene = nullptr;
 GameOver* gameOverScene = nullptr;
 Enemy* enemy = nullptr;
@@ -23,6 +25,7 @@ Player* player = nullptr;
 enum class Scene {
 	kUnknown = 0,
 	kTitle,
+	kTutrial,
 	kGame,
 	kClear,
 	kOver,
@@ -30,17 +33,17 @@ enum class Scene {
 
 //BGM
 //  タイトルBGM
-void PlayTitleBGM() { PlaySound(TEXT("Title.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP); }
+void PlayTitleBGM() { PlaySound(TEXT("BGM./Title.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP); }
 
 
 // ゲームプレイBGM
-void PlayGameBGM() { PlaySound(TEXT("PlayGame.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP); }
+void PlayGameBGM() { PlaySound(TEXT("BGM./PlayGame.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP); }
 
 // ゲームオーバーBGM
-void PlayGameOverBGM() { PlaySound(TEXT("GameOver.wav"), NULL, SND_FILENAME | SND_ASYNC); }
+void PlayGameOverBGM() { PlaySound(TEXT("BGM./GameOver.wav"), NULL, SND_FILENAME | SND_ASYNC); }
 
 // クリアBGM
-void PlayClearBGM() { PlaySound(TEXT("GameClear.wav"), NULL, SND_FILENAME | SND_ASYNC); }
+void PlayClearBGM() { PlaySound(TEXT("BGM./GameClear.wav"), NULL, SND_FILENAME | SND_ASYNC); }
 
 // BGMを止める
 void StopBGM() { PlaySound(NULL, 0, 0); }
@@ -59,16 +62,24 @@ void ChangeScene() {
 			isBGMPlaying = true;
 		}
 		if (titleScene->IsFinished()) {
+			scene = Scene::kTutrial;
+			delete titleScene;
+			titleScene = nullptr;
+			tutrialScene = new Tutrial; 
+			tutrialScene->Initialize();
+		}
+		break;
+	case Scene::kTutrial:
+		if (tutrialScene->IsFinished()) {
 			StopBGM();
 			isBGMPlaying = false;
 			scene = Scene::kGame;
-			delete titleScene;
-			titleScene = nullptr;
+			delete tutrialScene;
+			tutrialScene = nullptr;
 			gameScene = new GameScene;
 			gameScene->Initialize();
 		}
 		break;
-
 	case Scene::kGame:
 		if (!isBGMPlaying) {
 			PlayGameBGM();
@@ -157,6 +168,9 @@ void UpdateScene() {
 	case Scene::kTitle:
 		titleScene->Update();
 		break;
+	case Scene::kTutrial:
+		tutrialScene->Update();
+		break;
 	case Scene::kGame:
 		gameScene->Update();
 		break;
@@ -174,6 +188,9 @@ void DrawScene() {
 	case Scene::kTitle:
 		titleScene->Draw();
 		break;
+	case Scene::kTutrial:
+		tutrialScene->Draw();
+		break;
 	case Scene::kGame:
 		gameScene->Draw();
 		break;
@@ -189,7 +206,7 @@ void DrawScene() {
 int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 	// エンジンの初期化
-	KamataEngine::Initialize(L"LE2C_10_サクラ_タイキ_RobotBreaker");
+	KamataEngine::Initialize(L"LE2C_15_サクラ_タイキ_氷結大探索");
 
 	// DirectXCommonインスタンスの取得
 	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
@@ -243,6 +260,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 	// タイトルの開放
 	delete titleScene;
+
+	delete tutrialScene;
 
 	delete gameClearScene;
 

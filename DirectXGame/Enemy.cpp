@@ -89,11 +89,11 @@ void Enemy::Draw() {
 }
 
 // 02_10 スライド14枚目
-AABB Enemy::GetAABB() {
+AABB Enemy::GetAABB() const {
 
 	Vector3 worldPos = GetWorldPosition();
 
-	AABB aabb;
+	AABB aabb{};
 
 	aabb.min = {worldPos.x - kWidth / 2.0f, worldPos.y - kHeight / 2.0f, worldPos.z - kWidth / 2.0f};
 	aabb.max = {worldPos.x + kWidth / 2.0f, worldPos.y + kHeight / 2.0f, worldPos.z + kWidth / 2.0f};
@@ -102,9 +102,9 @@ AABB Enemy::GetAABB() {
 }
 
 // 02_10 スライド14枚目
-Vector3 Enemy::GetWorldPosition() {
+Vector3 Enemy::GetWorldPosition() const {
 
-	Vector3 worldPos;
+	Vector3 worldPos{};
 
 	// ワールド行列の平行移動成分を取得（ワールド座標）
 	worldPos.x = worldTransform_.matWorld_.m[3][0];
@@ -133,7 +133,7 @@ void Enemy::OnCollision(const Player* player) {
 			Vector3 pos = player->GetWorldPosition();
 
 			// 敵と自キャラの中間位置にエフェクトを生成
-			Vector3 effectPos;
+			Vector3 effectPos{};
 
 			effectPos.x = (GetWorldPosition() + pos).x / 2.0f;
 			effectPos.y = (GetWorldPosition() + pos).y / 2.0f;

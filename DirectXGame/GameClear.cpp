@@ -4,17 +4,17 @@
 
 GameClear::~GameClear() {
 
-	delete modelGameClear_;
+	delete spriteGameClear_;
 
 	delete fade_;
 }
 
 void GameClear::Initialize() {
 
-	modelGameClear_ = Model::CreateFromOBJ("GameClear", true);
+	textureHandle_ = TextureManager::Load("GameClear.png");
+	
 
-	// カメラ初期化
-	camera_.Initialize();
+	spriteGameClear_ = Sprite::Create(textureHandle_, {640.0f,360.0f},{1,1,1,1},{0.5f,0.5f});
 
 	fade_ = new Fade();
 
@@ -23,11 +23,7 @@ void GameClear::Initialize() {
 	// 02_13 22枚目
 	fade_->Start(Fade::Status::FadeIn, 1.0f);
 
-	const float kPlayerTitle = 7.0f;
-
-	worldTransformGameClear_.Initialize();
-
-	worldTransformGameClear_.scale_ = {kPlayerTitle, kPlayerTitle, kPlayerTitle};
+	
 }
 
 void GameClear::Update() {
@@ -59,19 +55,8 @@ void GameClear::Update() {
 		break;
 	}
 
-	counter_ += 1.0f / 60.0f;
-	counter_ = std::fmod(counter_, kTimeGameClearMove);
-
-	float angle = counter_ / kTimeGameClearMove * 2.0f * std::numbers::pi_v<float>;
-
-	worldTransformGameClear_.translation_.y = std::sin(angle) + 10.0f;
-
-	camera_.TransferMatrix();
-
-	// アフィン変換～DirectXに転送(タイトル座標)
-	WorldTransformUpdate(worldTransformGameClear_);
-
-	fade_->Update();
+	
+	
 }
 
 void GameClear::Draw() {
@@ -80,10 +65,10 @@ void GameClear::Draw() {
 	// コマンドリストの取得
 	ID3D12GraphicsCommandList* commandList = dxCommon_->GetCommandList();
 
-	Model::PreDraw(commandList);
+	Sprite::PreDraw(commandList);
 
-	modelGameClear_->Draw(worldTransformGameClear_, camera_);
+	spriteGameClear_->Draw();
 
 	fade_->Draw();
-	Model::PostDraw();
+	Sprite::PostDraw();
 }

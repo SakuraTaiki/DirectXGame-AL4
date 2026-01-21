@@ -124,8 +124,6 @@ void Player::BehaviorAttackInitialize() {
 	// 02_14 19枚目 カウンター初期化
 	attackParameter_ = 0;
 
-	velocity_ = {};
-
 	// 溜めフェーズから始める
 	attackPhase_ = AttackPhase::kAnticipation;
 }
@@ -136,11 +134,15 @@ void Player::BehaviorAttackUpdate() {
 	// 02_14 29枚目
 	const Vector3 attackVelocity = {0.8f, 0.0f, 0.0f};
 
-	// 02_14 291枚目 攻撃動作用の速度
-	Vector3 velocity{};
+	
 
 	// 02_14 19枚目 予備動作
 	attackParameter_++;
+
+	if (!onGround_) {
+		velocity_.y += -kGravityAcceleration / 60.0f;
+		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
+	}
 
 	switch (attackPhase_) {
 	case AttackPhase::kAnticipation: // 溜め動作
@@ -163,9 +165,9 @@ void Player::BehaviorAttackUpdate() {
 
 			Vector3 bulletVel{};
 			if (lrDirection_ == LRDirection::kRight) {
-				bulletVel = {0.5f, 0.0f, 0.0f};
+				bulletVel = {0.25f, 0.2f, -0.0f};
 			} else {
-				bulletVel = {-0.5f, 0.0f, 0.0f};
+				bulletVel = {-0.25f, 0.2f, 0.0f};
 			}
 
 			gameScene_->CreatePlayerBullet(bulletPos, bulletVel);
@@ -191,7 +193,7 @@ void Player::BehaviorAttackUpdate() {
 
 	// 衝突情報を初期化
 	CollisionMapInfo collisionMapInfo = {};
-	collisionMapInfo.move = velocity;
+	collisionMapInfo.move = velocity_;
 	collisionMapInfo.landing = false;
 	collisionMapInfo.hitWall = false;
 

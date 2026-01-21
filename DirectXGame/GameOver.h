@@ -28,10 +28,10 @@ private:
 	static inline const float kTimeGameOverMove = 2.0f;
 
 	// ビュープロジェクション
-	Camera camera_;
-	WorldTransform worldTransformGameOver_;
 	
-	Model* modelGameOver_ = nullptr;
+	Sprite* spriteGameOver_ = nullptr;
+
+	uint32_t textureHandle_ = 0;
 
 	Fade* fade_ = nullptr;
 

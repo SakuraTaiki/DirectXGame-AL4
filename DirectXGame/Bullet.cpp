@@ -24,7 +24,17 @@ void Bullet::Initialize(Model* model, Camera* camera, const Vector3& position, c
 
 void Bullet::Update() {
 
+	velocity_.y -= kGravity;
+
 	worldTransform_.translation_ += velocity_;
+
+	if (worldTransform_.translation_.y <= kGroundY) {
+		worldTransform_.translation_.y = kGroundY;
+		if (velocity_.y < 0.0f) {
+			velocity_.y = kBouncePower;
+		}
+	}
+
 	WorldTransformUpdate(worldTransform_);
 
 	lifeTime_--;

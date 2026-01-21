@@ -31,4 +31,10 @@ private:
 	bool isDead_ = false;
 
 	 static constexpr float kRadius = 1.0f;
+
+	 static constexpr float kGravity = 0.02f;
+
+	 static constexpr float kBouncePower = 0.35f;
+
+	 static constexpr float kGroundY = 0.0f;
 };

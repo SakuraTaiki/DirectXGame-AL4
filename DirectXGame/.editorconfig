@@ -1,2 +1,7 @@
 [*.{cpp,h}]
 charset = utf-8
+spelling_erooor_serverity=error
+spelling_checkable_types=identifilters,comments
+spelling_languages=en-us
+spelling_use_defaulr_exclusion_dictionary=true
+spelling_exclusion_path=./exclusion.dic
