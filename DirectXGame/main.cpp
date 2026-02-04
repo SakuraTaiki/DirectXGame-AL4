@@ -1,13 +1,16 @@
+#include "Enemy.h"
+#include "GameClear.h"
+#include "GameOver.h"
 #include "GameScene.h"
-#include"Player.h"
-#include"Enemy.h"
 #include "KamataEngine.h"
+#include "Player.h"
 #include "TitleScene.h"
-#include"Tutrial.h"
-#include"GameClear.h"
-#include"GameOver.h"
+#include "Tutrial.h"
 #include <Windows.h>
+#include <fstream>
 #include <mmsystem.h>
+#include <wrl.h>
+#include "Bgm.h"
 #pragma comment(lib, "winmm.lib")
 
 using namespace KamataEngine;
@@ -31,48 +34,128 @@ enum class Scene {
 	kOver,
 };
 
-//BGM
-//  タイトルBGM
-void PlayTitleBGM() { PlaySound(TEXT("BGM./Title.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP); }
+void ChangeScene();
 
+void UpdateScene();
 
-// ゲームプレイBGM
-void PlayGameBGM() { PlaySound(TEXT("BGM./PlayGame.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP); }
+void DrawScene();
 
-// ゲームオーバーBGM
-void PlayGameOverBGM() { PlaySound(TEXT("BGM./GameOver.wav"), NULL, SND_FILENAME | SND_ASYNC); }
+BGM* bgm_ = nullptr;
 
-// クリアBGM
-void PlayClearBGM() { PlaySound(TEXT("BGM./GameClear.wav"), NULL, SND_FILENAME | SND_ASYNC); }
-
-// BGMを止める
-void StopBGM() { PlaySound(NULL, 0, 0); }
-
-bool isBGMPlaying = false;
+// BGM
+//   タイトルBGM
 
 Scene scene = Scene::kUnknown;
+
+uint32_t gameClearBgmHandle_;
+uint32_t gamePlayBgmHandle_;
+uint32_t titleBgmHandle_;
+uint32_t overBgm_;
+
+
+int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
+
+	// エンジンの初期化
+	KamataEngine::Initialize(L"LE2C_15_サクラ_タイキ_氷結大探索");
+
+	
+	// DirectXCommonインスタンスの取得
+	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
+
+	ImGuiManager* imguiManager = ImGuiManager::GetInstance();
+
+	// タイトル
+	scene = Scene::kTitle;
+	titleScene = new TitleScene;
+	titleScene->Initialize();
+
+	gameClearBgmHandle_ = Audio::GetInstance()->LoadWave("./BGM/Clear.mp3");
+	gamePlayBgmHandle_ = Audio::GetInstance()->LoadWave("./BGM/GamePlay.mp3");
+	titleBgmHandle_ = Audio::GetInstance()->LoadWave("./BGM/Title.mp3");
+	overBgm_ = Audio::GetInstance()->LoadWave("./BGM/GameOver.mp3");
+
+	bgm_ = new BGM();
+	bgm_->Initialize();
+
+	// メインループ
+	while (true) {
+		// エンジンの更新
+		if (KamataEngine::Update()) {
+			break;
+		}
+
+		ChangeScene();
+
+		UpdateScene();
+
+
+		// imGui受付開始
+		imguiManager->Begin();
+
+		
+
+		// シーン更新
+
+		// imGui受付終了
+		imguiManager->End();
+		// 描画開始
+		dxCommon->PreDraw();
+
+		DrawScene();
+
+		// 軸表示の描画
+		AxisIndicator::GetInstance()->Draw();
+
+		// プリミティブ描画のリセット
+		PrimitiveDrawer::GetInstance()->Reset();
+
+		// imGui描画
+		imguiManager->Draw();
+
+		// 描画終了
+		dxCommon->PostDraw();
+	}
+
+	// ゲームシーンの開放
+	delete gameScene;
+
+	// タイトルの開放
+	delete titleScene;
+
+	delete tutrialScene;
+
+	delete gameClearScene;
+
+	delete gameOverScene;
+
+	delete enemy;
+
+	delete player;
+
+
+	// エンジンの終了処理
+	KamataEngine::Finalize();
+
+	return 0;
+}
 
 void ChangeScene() {
 
 	switch (scene) {
-
 	case Scene::kTitle:
-		if (!isBGMPlaying) {
-			PlayTitleBGM();
-			isBGMPlaying = true;
-		}
+		if (!bgm_->IsPlaying())
+			bgm_->BGMPlay(titleBgmHandle_);
 		if (titleScene->IsFinished()) {
 			scene = Scene::kTutrial;
 			delete titleScene;
 			titleScene = nullptr;
-			tutrialScene = new Tutrial; 
+			tutrialScene = new Tutrial;
 			tutrialScene->Initialize();
 		}
 		break;
 	case Scene::kTutrial:
 		if (tutrialScene->IsFinished()) {
-			StopBGM();
-			isBGMPlaying = false;
+			bgm_->BGMStop();
 			scene = Scene::kGame;
 			delete tutrialScene;
 			tutrialScene = nullptr;
@@ -81,59 +164,42 @@ void ChangeScene() {
 		}
 		break;
 	case Scene::kGame:
-		if (!isBGMPlaying) {
-			PlayGameBGM();
-			isBGMPlaying = true;
+		if (!bgm_->IsPlaying()) {
+			bgm_->BGMPlay(gamePlayBgmHandle_);
 		}
-		if (gameScene->GetPlayer()->IsDead()) {
-			StopBGM();
-			isBGMPlaying = false;
-			scene = Scene::kOver;
-			delete gameScene;
-			gameScene = nullptr;
-			gameOverScene = new GameOver;
-			gameOverScene->Initialize();
-		} else if (gameScene->AreAllEnemiesDefeated()) {
-			StopBGM();
-			isBGMPlaying = false;
+
+		// クリア
+		if (gameScene->AreAllEnemiesDefeated()) {
+			bgm_->BGMStop();
+
 			scene = Scene::kClear;
 			delete gameScene;
 			gameScene = nullptr;
 			gameClearScene = new GameClear;
 			gameClearScene->Initialize();
+			break;
+		}
+		
+		
+		// ゲームオーバー
+		if (gameScene->GetPlayer()->IsDead()) {
+			bgm_->BGMStop();
+
+			scene = Scene::kOver;
+			gameOverScene = new GameOver;
+			gameOverScene->Initialize();
+
+			delete gameScene;
+			gameScene = nullptr;
+			break; 
 		}
 
-			 // Input クラスで ESC キー押下を判定
-		if (Input::GetInstance()->TriggerKey(DIK_ESCAPE)) {
-			StopBGM();
-			isBGMPlaying = false;
-
-			if (scene == Scene::kGame) {
-				scene = Scene::kTitle;
-				if (!isBGMPlaying) {
-					PlayTitleBGM();
-					isBGMPlaying = true;
-				}
-				
-				delete gameScene;
-				gameScene = nullptr;
-
-				titleScene = new TitleScene;
-				titleScene->Initialize();
-
-				return; // Update終了
-			}
-		}
 		break;
 	case Scene::kClear:
-
-		if (!isBGMPlaying) {
-			PlayClearBGM();
-			isBGMPlaying = true;
-		}
+		if (!bgm_->IsPlaying())
+			bgm_->BGMPlay(gameClearBgmHandle_);
 		if (gameClearScene->IsFinished()) {
-			StopBGM();
-			isBGMPlaying = false;
+			bgm_->BGMStop();
 			scene = Scene::kTitle;
 			delete gameClearScene;
 			gameClearScene = nullptr;
@@ -141,29 +207,22 @@ void ChangeScene() {
 			titleScene->Initialize();
 		}
 		break;
-
 	case Scene::kOver:
-
-		 if (!isBGMPlaying) {
-			PlayGameOverBGM();
-			isBGMPlaying = true;
-		}
+		if (!bgm_->IsPlaying())
+			bgm_->BGMPlay(overBgm_);
 		if (gameOverScene->IsFinished()) {
-			StopBGM();
-			isBGMPlaying = false;
+			bgm_->BGMStop();
 			scene = Scene::kTitle;
 			delete gameOverScene;
 			gameOverScene = nullptr;
 			titleScene = new TitleScene;
 			titleScene->Initialize();
 		}
-
 		break;
 	}
 }
 
 void UpdateScene() {
-
 	switch (scene) {
 	case Scene::kTitle:
 		titleScene->Update();
@@ -194,84 +253,11 @@ void DrawScene() {
 	case Scene::kGame:
 		gameScene->Draw();
 		break;
-	case Scene::kClear: 
-		gameClearScene->Draw(); 
+	case Scene::kClear:
+		gameClearScene->Draw();
 		break;
-    case Scene::kOver: 
+	case Scene::kOver:
 		gameOverScene->Draw();
 		break;
 	}
-}
-
-int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
-
-	// エンジンの初期化
-	KamataEngine::Initialize(L"LE2C_15_サクラ_タイキ_氷結大探索");
-
-	// DirectXCommonインスタンスの取得
-	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
-
-	ImGuiManager* imguiManager = ImGuiManager::GetInstance();
-
-	// タイトル
-	scene = Scene::kTitle;
-	titleScene = new TitleScene;
-	titleScene->Initialize();
-
-	// メインループ
-	while (true) {
-		// エンジンの更新
-		if (KamataEngine::Update()) {
-			break;
-		}
-		// imGui受付開始
-		imguiManager->Begin();
-
-		UpdateScene(); // 02_12 33枚目で追加
-
-
-		// シーン切り替え
-		ChangeScene(); // 02_12 33枚目で追加
-		// シーン更新
-		
-		// imGui受付終了
-		imguiManager->End();
-		// 描画開始
-		dxCommon->PreDraw();
-
-		DrawScene();
-
-		// 軸表示の描画
-		AxisIndicator::GetInstance()->Draw();
-
-		// プリミティブ描画のリセット
-		PrimitiveDrawer::GetInstance()->Reset();
-
-		// imGui描画
-		imguiManager->Draw();
-		imguiManager->Draw();
-
-		// 描画終了
-		dxCommon->PostDraw();
-	}
-
-	// ゲームシーンの開放
-	delete gameScene;
-
-	// タイトルの開放
-	delete titleScene;
-
-	delete tutrialScene;
-
-	delete gameClearScene;
-
-	delete gameOverScene;
-
-	delete enemy;
-
-	delete player;
-	// エンジンの終了処理
-	KamataEngine::Finalize();
-
-	return 0;
 }
